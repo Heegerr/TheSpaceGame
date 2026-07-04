@@ -14,6 +14,11 @@ const RESOURCE_CAP := 80
 const RESOURCE_CHANCE := 0.014
 const PAD_CLEAR_DISTANCE := 96.0
 
+const ENEMY_SCENE := preload("res://scenes/planet/enemy.tscn")
+const ENEMY_MIN := 6
+const ENEMY_MAX := 10
+const ENEMY_MIN_PAD_DISTANCE := 320.0
+
 const BIOME_RESOURCE_WEIGHTS: Dictionary[int, Dictionary] = {
 	PlanetData.Biome.GRASS: {"plant": 0.5, "ore": 0.3, "scrap": 0.2},
 	PlanetData.Biome.DESERT: {"scrap": 0.45, "ore": 0.4, "plant": 0.15},
@@ -39,6 +44,9 @@ func _ready() -> void:
 	_generate_terrain()
 	_place_pad_and_player()
 	_scatter_resources()
+	_spawn_enemies()
+	hud.bind_player(player)
+	player.died.connect(_on_player_died)
 
 
 func _generate_terrain() -> void:
@@ -137,6 +145,37 @@ func _scatter_resources() -> void:
 			add_child(node)
 			node.setup(_pick_weighted(rng, weights))
 			placed += 1
+
+
+func _spawn_enemies() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = data.planet_seed + 2
+	var to_spawn := rng.randi_range(ENEMY_MIN, ENEMY_MAX)
+	var attempts := 0
+	var spawned := 0
+	while spawned < to_spawn and attempts < 400:
+		attempts += 1
+		var cell := Vector2i(rng.randi_range(3, MAP_SIZE - 4), rng.randi_range(3, MAP_SIZE - 4))
+		if not is_placeable(cell):
+			continue
+		var world := terrain.map_to_local(cell)
+		if world.distance_to(pad_position) < ENEMY_MIN_PAD_DISTANCE:
+			continue
+		var enemy := ENEMY_SCENE.instantiate()
+		enemy.position = world
+		add_child(enemy)
+		enemy.setup(data.biome)
+		spawned += 1
+
+
+func _on_player_died() -> void:
+	hud.show_game_over()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("respawn") and not player.alive:
+		player.respawn(pad_position + Vector2(0, 44))
+		hud.hide_game_over()
 
 
 func _pick_weighted(rng: RandomNumberGenerator, weights: Dictionary) -> String:

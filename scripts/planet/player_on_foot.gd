@@ -1,17 +1,37 @@
 extends CharacterBody2D
-## On-foot player controller: 8-directional movement plus interaction with
-## nearby interactables (resource nodes, the landed ship).
+## On-foot player: 8-directional movement, interaction with nearby
+## interactables, a mouse-aimed blaster, and health with hit feedback.
+
+signal health_changed(current: int, max_health: int)
+signal died
 
 const MAX_SPEED := 130.0
 const ACCELERATION := 900.0
 const FRICTION := 1100.0
+const MAX_HEALTH := 5
+const SHOOT_COOLDOWN := 0.3
+const INVULN_TIME := 1.0
+const KNOCKBACK := 170.0
+
+const PROJECTILE_SCENE := preload("res://scenes/planet/projectile.tscn")
 
 @onready var interact_range: Area2D = $InteractRange
+@onready var visual: Node2D = $Visual
+@onready var collision: CollisionShape2D = $CollisionShape2D
+
+var health := MAX_HEALTH
+var alive := true
 
 var _interact_target: Area2D
+var _shoot_timer := 0.0
+var _invuln_timer := 0.0
 
 
 func _physics_process(delta: float) -> void:
+	if not alive:
+		return
+	_shoot_timer = maxf(0.0, _shoot_timer - delta)
+	_update_invulnerability(delta)
 	var input_dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	if input_dir != Vector2.ZERO:
 		velocity = velocity.move_toward(input_dir * MAX_SPEED, ACCELERATION * delta)
@@ -19,11 +39,74 @@ func _physics_process(delta: float) -> void:
 		velocity = velocity.move_toward(Vector2.ZERO, FRICTION * delta)
 	move_and_slide()
 	_update_interact_target()
+	if Input.is_action_pressed("attack") and _shoot_timer == 0.0:
+		_shoot()
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("interact") and _interact_target != null:
+	if alive and event.is_action_pressed("interact") and _interact_target != null:
 		_interact_target.interact()
+
+
+func take_damage(amount: int, from_position: Vector2) -> void:
+	if not alive or _invuln_timer > 0.0:
+		return
+	health = maxi(0, health - amount)
+	health_changed.emit(health, MAX_HEALTH)
+	_invuln_timer = INVULN_TIME
+	var away := (global_position - from_position).normalized()
+	if away == Vector2.ZERO:
+		away = Vector2.DOWN
+	velocity += away * KNOCKBACK
+	visual.modulate = Color(1, 0.3, 0.3)
+	var tween := create_tween()
+	tween.tween_property(visual, "modulate", Color.WHITE, 0.25)
+	if health == 0:
+		_die()
+
+
+func respawn(at: Vector2) -> void:
+	global_position = at
+	health = MAX_HEALTH
+	health_changed.emit(health, MAX_HEALTH)
+	alive = true
+	visible = true
+	visual.visible = true
+	velocity = Vector2.ZERO
+	collision.set_deferred("disabled", false)
+	_invuln_timer = INVULN_TIME
+	(get_node("Camera2D") as Camera2D).reset_smoothing()
+
+
+func _shoot() -> void:
+	_shoot_timer = SHOOT_COOLDOWN
+	var dir := (get_global_mouse_position() - global_position).normalized()
+	if dir == Vector2.ZERO:
+		dir = Vector2.RIGHT
+	var projectile := PROJECTILE_SCENE.instantiate()
+	projectile.direction = dir
+	projectile.position = position + dir * 10.0
+	get_parent().add_child(projectile)
+
+
+func _die() -> void:
+	alive = false
+	visible = false
+	velocity = Vector2.ZERO
+	collision.set_deferred("disabled", true)
+	var hud := get_tree().get_first_node_in_group("hud")
+	if hud != null:
+		hud.hide_hint()
+	died.emit()
+
+
+func _update_invulnerability(delta: float) -> void:
+	if _invuln_timer <= 0.0:
+		return
+	_invuln_timer = maxf(0.0, _invuln_timer - delta)
+	visual.visible = int(_invuln_timer * 12.0) % 2 == 0
+	if _invuln_timer == 0.0:
+		visual.visible = true
 
 
 func _update_interact_target() -> void:
