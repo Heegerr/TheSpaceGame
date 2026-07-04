@@ -27,12 +27,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if not active:
 		return
-	if event is InputEventKey and event.pressed and not event.echo:
-		var index := event.keycode - KEY_1
-		if index >= 0 and index < Structure.DEFS.size():
-			selected_type = index
-			_notify_hud()
-			get_viewport().set_input_as_handled()
+	if event is InputEventKey:
+		var key_event: InputEventKey = event
+		if key_event.pressed and not key_event.echo:
+			var index: int = key_event.keycode - KEY_1
+			if index >= 0 and index < Structure.DEFS.size():
+				selected_type = index
+				_notify_hud()
+				get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("attack"):
 		_try_place(_mouse_cell())
 		get_viewport().set_input_as_handled()
@@ -46,6 +48,12 @@ func set_active(value: bool) -> void:
 	if player != null:
 		player.shooting_enabled = not active
 	_notify_hud()
+
+
+func _notify_hud() -> void:
+	var hud := get_tree().get_first_node_in_group("hud")
+	if hud != null:
+		hud.set_build_menu(active, selected_type)
 
 
 func _process(_delta: float) -> void:
