@@ -17,6 +17,8 @@ var _engine_level := 0.0
 
 
 func _ready() -> void:
+	# Keep feeding the engine-hum generator while the tree is paused.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_clips["laser"] = _synth_laser()
 	_clips["footstep"] = _synth_footstep()
 	_clips["pickup"] = _synth_pickup()

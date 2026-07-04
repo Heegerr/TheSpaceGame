@@ -18,8 +18,8 @@ All six phases are complete.
 
 ## Milestones (second build wave)
 
-- [ ] Milestone 1 - Colony building (build mode B, 4 structures with costs, per-planet persistence, build menu UI)
-- [ ] Milestone 2 - Save/load system (3 slots, main menu New/Continue/Load, autosave on return, manual save via pause menu)
+- [x] Milestone 1 - Colony building (build mode B, 4 structures with costs, per-planet persistence, build menu UI)
+- [x] Milestone 2 - Save/load system (3 slots, main menu New/Continue/Load, autosave on return, manual save via pause menu)
 - [ ] Milestone 3 - Ship upgrades (engine/hull/weapon/cargo tiers) + fleet escorts with follow AI and ship switching
 - [ ] Milestone 4 - Tactical ship combat (combat mode, energy weapons, shields, 3 enemy ship types, escorts join, loot)
 - [ ] Milestone 5 - Wave/threat escalation campaign, boss wave, infinite mode unlock + notifications
