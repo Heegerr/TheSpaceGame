@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/space/space.gd" id="1_space"]
 [ext_resource type="Script" path="res://scripts/space/starfield.gd" id="2_stars"]
 [ext_resource type="Script" path="res://scripts/space/planet_field.gd" id="3_field"]
 [ext_resource type="PackedScene" path="res://scenes/space/player_ship.tscn" id="4_ship"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5_hud"]
+[ext_resource type="Script" path="res://scripts/space/encounter_manager.gd" id="5_enc"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="6_hud"]
 
 [node name="Space" type="Node2D"]
 script = ExtResource("1_space")
@@ -15,10 +16,13 @@ script = ExtResource("2_stars")
 [node name="PlanetField" type="Node2D" parent="."]
 script = ExtResource("3_field")
 
+[node name="EncounterManager" type="Node2D" parent="."]
+script = ExtResource("5_enc")
+
 [node name="PlayerShip" parent="." instance=ExtResource("4_ship")]
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position_smoothing_enabled = true
 position_smoothing_speed = 6.0
 
-[node name="HUD" parent="." instance=ExtResource("5_hud")]
+[node name="HUD" parent="." instance=ExtResource("6_hud")]

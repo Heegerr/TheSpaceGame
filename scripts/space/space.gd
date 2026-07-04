@@ -1,6 +1,7 @@
 extends Node2D
 ## Space scene controller: owns the ship roster (flagship + escorts), the
-## follow camera, ship switching (Tab), and planet approach/landing.
+## follow camera, ship switching (Tab), planet landing, and combat mode state
+## (driven by the EncounterManager).
 
 const LAND_DISTANCE := 70.0
 const SHIP_SCENE := preload("res://scenes/space/player_ship.tscn")
@@ -9,30 +10,41 @@ const ESCORT_TINT := Color(0.78, 0.9, 1.0)
 
 @onready var planet_field: Node2D = $PlanetField
 @onready var camera: Camera2D = $Camera2D
+@onready var encounters: Node2D = $EncounterManager
+@onready var hud: CanvasLayer = $HUD
 
 var ships: Array[CharacterBody2D] = []
 var active_index := 0
+var combat_active := false
 var _nearby_planet: SpacePlanet
 
 
 func _ready() -> void:
 	var flagship: CharacterBody2D = $PlayerShip
-	ships.append(flagship)
+	_register_ship(flagship)
 	if not GameManager.ship_state.is_empty():
 		flagship.position = GameManager.ship_state.get("position", Vector2.ZERO)
 		flagship.rotation = GameManager.ship_state.get("rotation", 0.0)
 	for i in GameManager.fleet_size:
 		var escort: CharacterBody2D = SHIP_SCENE.instantiate()
 		escort.position = flagship.position + ESCORT_OFFSETS[i % ESCORT_OFFSETS.size()]
-		escort.modulate = ESCORT_TINT
 		add_child(escort)
 		escort.is_player_controlled = false
-		ships.append(escort)
+		_register_ship(escort)
 	_set_active(0, true)
 
 
 func active_ship() -> CharacterBody2D:
 	return ships[active_index]
+
+
+func set_combat(active: bool) -> void:
+	if combat_active == active:
+		return
+	combat_active = active
+	for ship in ships:
+		if is_instance_valid(ship):
+			ship.combat_slowdown = active
 
 
 func _process(_delta: float) -> void:
@@ -68,6 +80,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			_land()
 
 
+func _register_ship(ship: CharacterBody2D) -> void:
+	ships.append(ship)
+	ship.add_to_group("player_fleet")
+	ship.combat_slowdown = combat_active
+	ship.destroyed.connect(_on_ship_destroyed)
+
+
 func _set_active(index: int, snap: bool) -> void:
 	active_index = index
 	var escort_slot := 0
@@ -86,9 +105,35 @@ func _set_active(index: int, snap: bool) -> void:
 			if ship.is_in_group("player_ship"):
 				ship.remove_from_group("player_ship")
 			ship.modulate = ESCORT_TINT
+	hud.bind_ship(active_ship())
 	if snap:
 		camera.global_position = active_ship().global_position
 		camera.reset_smoothing()
+
+
+func _on_ship_destroyed(ship: CharacterBody2D) -> void:
+	if ship == ships[0]:
+		# The flagship never dies for good: emergency warp back to the spawn point.
+		hud.show_banner("SHIP DESTROYED - emergency warp home", Color(1, 0.4, 0.35))
+		ship.position = Vector2.ZERO
+		ship.velocity = Vector2.ZERO
+		ship.reset_combat_state()
+		encounters.reset_aggro()
+		set_combat(false)
+		if ship == active_ship():
+			camera.global_position = ship.global_position
+			camera.reset_smoothing()
+		return
+	hud.show_banner("Escort lost", Color(1, 0.6, 0.4))
+	GameManager.fleet_size = maxi(0, GameManager.fleet_size - 1)
+	var active := active_ship()
+	ships.erase(ship)
+	ship.queue_free()
+	if ship == active:
+		_set_active(0, true)
+	else:
+		# The erase shifted indices; re-resolve where the active ship now sits.
+		_set_active(maxi(ships.find(active), 0), false)
 
 
 func _land() -> void:

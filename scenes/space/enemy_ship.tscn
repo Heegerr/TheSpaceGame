@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/space/enemy_ship.gd" id="1_hostile"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hostile"]
+radius = 9.0
+
+[node name="EnemyShip" type="CharacterBody2D" groups=["hostile_ships"]]
+collision_layer = 32
+collision_mask = 0
+motion_mode = 1
+script = ExtResource("1_hostile")
+
+[node name="Body" type="Polygon2D" parent="."]
+color = Color(1, 0.45, 0.35, 1)
+polygon = PackedVector2Array(10, 0, -8, 6, -4, 0, -8, -6)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_hostile")

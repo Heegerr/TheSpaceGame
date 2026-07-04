@@ -99,6 +99,7 @@ switch_ship={
 2d_physics/layer_3="enemy"
 2d_physics/layer_4="interactable"
 2d_physics/layer_5="projectile"
+2d_physics/layer_6="hostile_ship"
 
 [physics]
 

@@ -38,6 +38,13 @@ var _ship_rows: Array[Dictionary] = []
 var _fleet_label: Label
 var _fleet_button: Button
 var _ship_menu_built := false
+var _space_ship: Node
+var _ship_bars: VBoxContainer
+var _hull_bar: ProgressBar
+var _shield_bar: ProgressBar
+var _energy_bar: ProgressBar
+var _banner: Label
+var _banner_tween: Tween
 
 
 func _ready() -> void:
@@ -56,6 +63,8 @@ func _ready() -> void:
 		_count_labels[resource_id] = label
 		_update_count(resource_id, Inventory.count(resource_id))
 	_create_build_menu()
+	_create_ship_bars()
+	_create_banner()
 	Inventory.changed.connect(_update_count)
 	GameManager.planet_changed.connect(_on_planet_changed)
 	_on_planet_changed(GameManager.current_planet)
@@ -90,6 +99,74 @@ func _on_save_pressed() -> void:
 		return
 	GameManager.save_current()
 	pause_status.text = "Saved."
+
+
+# -- Space ship binding (hull/shield/energy bars, polled while visible) --------------
+
+func bind_ship(ship: Node) -> void:
+	_space_ship = ship
+	_ship_bars.visible = true
+
+
+func _process(_delta: float) -> void:
+	if _ship_bars.visible and _space_ship != null and is_instance_valid(_space_ship):
+		_hull_bar.max_value = _space_ship.max_hull
+		_hull_bar.value = _space_ship.hull
+		_shield_bar.max_value = _space_ship.BASE_SHIELD
+		_shield_bar.value = _space_ship.shield
+		_energy_bar.max_value = _space_ship.MAX_ENERGY
+		_energy_bar.value = _space_ship.energy
+
+
+func show_banner(text: String, color: Color = Color.WHITE) -> void:
+	_banner.text = text
+	_banner.add_theme_color_override("font_color", color)
+	_banner.modulate.a = 1.0
+	if _banner_tween != null and _banner_tween.is_valid():
+		_banner_tween.kill()
+	_banner_tween = _banner.create_tween()
+	_banner_tween.tween_interval(1.6)
+	_banner_tween.tween_property(_banner, "modulate:a", 0.0, 0.6)
+
+
+func _create_ship_bars() -> void:
+	_ship_bars = VBoxContainer.new()
+	_ship_bars.anchor_left = 1.0
+	_ship_bars.anchor_right = 1.0
+	_ship_bars.offset_left = -104.0
+	_ship_bars.offset_right = -8.0
+	_ship_bars.offset_top = 8.0
+	_ship_bars.add_theme_constant_override("separation", 2)
+	_ship_bars.visible = false
+	add_child(_ship_bars)
+	_hull_bar = _make_bar(Color(0.88, 0.32, 0.3))
+	_shield_bar = _make_bar(Color(0.35, 0.65, 1.0))
+	_energy_bar = _make_bar(Color(1.0, 0.85, 0.35))
+
+
+func _make_bar(color: Color) -> ProgressBar:
+	var bar := ProgressBar.new()
+	bar.custom_minimum_size = Vector2(96, 7)
+	bar.show_percentage = false
+	var background := StyleBoxFlat.new()
+	background.bg_color = Color(0.1, 0.11, 0.15, 0.85)
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = color
+	bar.add_theme_stylebox_override("background", background)
+	bar.add_theme_stylebox_override("fill", fill)
+	_ship_bars.add_child(bar)
+	return bar
+
+
+func _create_banner() -> void:
+	_banner = Label.new()
+	_banner.anchor_right = 1.0
+	_banner.offset_top = 64.0
+	_banner.offset_bottom = 90.0
+	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_banner.add_theme_font_size_override("font_size", 14)
+	_banner.modulate.a = 0.0
+	add_child(_banner)
 
 
 # -- Player binding -----------------------------------------------------------------
