@@ -23,5 +23,10 @@ func _physics_process(delta: float) -> void:
 	flame.visible = input_dir != Vector2.ZERO
 	if flame.visible:
 		flame.scale.x = randf_range(0.8, 1.25)
+	Sfx.set_engine_thrust(input_dir.length())
 
 	move_and_slide()
+
+
+func _exit_tree() -> void:
+	Sfx.set_engine_thrust(0.0)

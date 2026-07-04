@@ -38,6 +38,7 @@ func interact() -> void:
 		return
 	var amount := randi_range(1, 3)
 	Inventory.add(resource_type, amount)
+	Sfx.play_pickup()
 	FloatingText.spawn(get_parent(), global_position + Vector2(0, -14),
 			"+%d %s" % [amount, DISPLAY_NAMES.get(resource_type, resource_type)],
 			Color(0.65, 0.95, 0.55))

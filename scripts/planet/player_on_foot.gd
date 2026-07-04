@@ -25,6 +25,7 @@ var alive := true
 var _interact_target: Area2D
 var _shoot_timer := 0.0
 var _invuln_timer := 0.0
+var _step_timer := 0.0
 
 
 func _physics_process(delta: float) -> void:
@@ -38,9 +39,20 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity = velocity.move_toward(Vector2.ZERO, FRICTION * delta)
 	move_and_slide()
+	_update_footsteps(delta)
 	_update_interact_target()
 	if Input.is_action_pressed("attack") and _shoot_timer == 0.0:
 		_shoot()
+
+
+func _update_footsteps(delta: float) -> void:
+	if velocity.length() > 40.0:
+		_step_timer -= delta
+		if _step_timer <= 0.0:
+			_step_timer = 0.28
+			Sfx.play_footstep()
+	else:
+		_step_timer = 0.0
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -58,6 +70,7 @@ func take_damage(amount: int, from_position: Vector2) -> void:
 	if away == Vector2.ZERO:
 		away = Vector2.DOWN
 	velocity += away * KNOCKBACK
+	Sfx.play_hit(0.8)
 	visual.modulate = Color(1, 0.3, 0.3)
 	var tween := create_tween()
 	tween.tween_property(visual, "modulate", Color.WHITE, 0.25)
@@ -80,6 +93,7 @@ func respawn(at: Vector2) -> void:
 
 func _shoot() -> void:
 	_shoot_timer = SHOOT_COOLDOWN
+	Sfx.play_laser()
 	var dir := (get_global_mouse_position() - global_position).normalized()
 	if dir == Vector2.ZERO:
 		dir = Vector2.RIGHT

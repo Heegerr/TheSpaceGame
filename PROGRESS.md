@@ -12,7 +12,12 @@ then continue with the first unchecked phase.
 - [x] Phase 3 - Resource gathering (Inventory autoload, gatherable nodes, HUD)
 - [x] Phase 4 - Basic combat (alien enemy AI, player projectile, health, game over/respawn)
 - [x] Phase 5 - Return to ship & loop closure (surface -> space, persistent inventory, new seeds)
-- [ ] Phase 6 - Placeholder audio (AudioStreamGenerator SFX: laser, footsteps, pickup, hit, engine)
+- [x] Phase 6 - Placeholder audio (AudioStreamGenerator SFX: laser, footsteps, pickup, hit, engine)
+
+All six phases are complete. Next session: open the project in the Godot editor,
+fix anything the editor reports (code was written without an editor available),
+commit the generated `.uid`/import artifacts, then playtest the full loop:
+fly -> land -> gather -> fight -> return -> land on a different planet.
 
 ## Notes for the next session
 

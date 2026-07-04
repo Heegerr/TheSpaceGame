@@ -71,6 +71,7 @@ func _physics_process(delta: float) -> void:
 
 func take_damage(amount: int, from_position: Vector2) -> void:
 	health -= amount
+	Sfx.play_hit(1.3)
 	FloatingText.spawn(get_parent(), global_position + Vector2(0, -12), str(amount), Color(1.0, 0.85, 0.4))
 	visual.modulate = Color(1, 0.3, 0.3)
 	var tween := create_tween()

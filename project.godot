@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 Inventory="*res://autoloads/inventory.gd"
 GameManager="*res://autoloads/game_manager.gd"
+Sfx="*res://autoloads/sfx.gd"
 
 [display]
 
