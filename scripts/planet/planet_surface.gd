@@ -19,6 +19,8 @@ const ENEMY_MIN := 6
 const ENEMY_MAX := 10
 const ENEMY_MIN_PAD_DISTANCE := 320.0
 
+const STRUCTURE_SCENE := preload("res://scenes/colony/structure.tscn")
+
 const BIOME_RESOURCE_WEIGHTS: Dictionary[int, Dictionary] = {
 	PlanetData.Biome.GRASS: {"plant": 0.5, "ore": 0.3, "scrap": 0.2},
 	PlanetData.Biome.DESERT: {"scrap": 0.45, "ore": 0.4, "plant": 0.15},
@@ -32,6 +34,7 @@ const BIOME_RESOURCE_WEIGHTS: Dictionary[int, Dictionary] = {
 
 var data: PlanetData
 var pad_position: Vector2
+var structure_cells: Dictionary[Vector2i, Node] = {}
 var _variants: Array[PackedInt32Array] = []
 
 
@@ -43,10 +46,28 @@ func _ready() -> void:
 	terrain.tile_set = TileSetBuilder.build()
 	_generate_terrain()
 	_place_pad_and_player()
+	_load_structures()
 	_scatter_resources()
 	_spawn_enemies()
 	hud.bind_player(player)
 	player.died.connect(_on_player_died)
+	$BuildController.setup(self, terrain)
+
+
+func _load_structures() -> void:
+	for entry in GameManager.structures_on(data.planet_seed):
+		var cell := Vector2i(int(entry.get("x", 0)), int(entry.get("y", 0)))
+		place_structure(int(entry.get("type", 0)), cell, false)
+
+
+func place_structure(structure_type: int, cell: Vector2i, record: bool) -> void:
+	var structure := STRUCTURE_SCENE.instantiate()
+	structure.position = terrain.map_to_local(cell)
+	add_child(structure)
+	structure.setup(structure_type)
+	structure_cells[cell] = structure
+	if record:
+		GameManager.add_structure(data.planet_seed, structure_type, cell)
 
 
 func _generate_terrain() -> void:
@@ -133,7 +154,7 @@ func _scatter_resources() -> void:
 			if placed >= RESOURCE_CAP:
 				return
 			var cell := Vector2i(x, y)
-			if not is_placeable(cell):
+			if not is_placeable(cell) or structure_cells.has(cell):
 				continue
 			if rng.randf() > RESOURCE_CHANCE:
 				continue

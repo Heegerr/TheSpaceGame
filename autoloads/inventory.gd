@@ -1,13 +1,16 @@
 extends Node
 ## Autoload "Inventory": resource counts the player carries. Persists across
 ## scene changes because it lives on an autoload, and is serialized into the
-## save file by GameManager.
+## save file by GameManager. Each resource is capped; Storage Silos and cargo
+## upgrades raise the cap via set_cap_bonus().
 
 signal changed(resource_id: String, new_amount: int)
 
-const RESOURCE_TYPES: Array[String] = ["ore", "plant", "scrap"]
+const RESOURCE_TYPES: Array[String] = ["ore", "plant", "scrap", "alloy"]
+const BASE_CAP := 50
 
 var _counts: Dictionary[String, int] = {}
+var _cap_bonus := 0
 
 
 func _ready() -> void:
@@ -16,12 +19,24 @@ func _ready() -> void:
 			_counts[resource_id] = 0
 
 
+func cap() -> int:
+	return BASE_CAP + _cap_bonus
+
+
+func set_cap_bonus(bonus: int) -> void:
+	if _cap_bonus == bonus:
+		return
+	_cap_bonus = bonus
+	for resource_id in _counts:
+		changed.emit(resource_id, _counts[resource_id])
+
+
 func count(resource_id: String) -> int:
 	return int(_counts.get(resource_id, 0))
 
 
 func add(resource_id: String, amount: int) -> void:
-	_counts[resource_id] = count(resource_id) + amount
+	_counts[resource_id] = clampi(count(resource_id) + amount, 0, cap())
 	changed.emit(resource_id, _counts[resource_id])
 
 

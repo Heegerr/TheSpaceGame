@@ -22,6 +22,10 @@ const PROJECTILE_SCENE := preload("res://scenes/planet/projectile.tscn")
 var health := MAX_HEALTH
 var alive := true
 
+## Cleared by the build controller while build mode is active, so placement
+## clicks don't fire the blaster.
+var shooting_enabled := true
+
 var _interact_target: Area2D
 var _shoot_timer := 0.0
 var _invuln_timer := 0.0
@@ -41,7 +45,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_update_footsteps(delta)
 	_update_interact_target()
-	if Input.is_action_pressed("attack") and _shoot_timer == 0.0:
+	if shooting_enabled and Input.is_action_pressed("attack") and _shoot_timer == 0.0:
 		_shoot()
 
 

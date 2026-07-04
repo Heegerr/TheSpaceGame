@@ -9,6 +9,7 @@ bg_color = Color(0.1, 0.11, 0.15, 0.85)
 bg_color = Color(0.88, 0.32, 0.3, 1)
 
 [node name="HUD" type="CanvasLayer" groups=["hud"]]
+process_mode = 3
 script = ExtResource("1_hud")
 
 [node name="Resources" type="VBoxContainer" parent="."]
@@ -42,6 +43,71 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_top = -30.0
 offset_bottom = -14.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 8
+
+[node name="BuildMenu" type="PanelContainer" parent="."]
+visible = false
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -250.0
+offset_top = -92.0
+offset_right = 250.0
+offset_bottom = -34.0
+
+[node name="BuildEntries" type="HBoxContainer" parent="BuildMenu"]
+alignment = 1
+
+[node name="ShipMenu" type="PanelContainer" parent="."]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -100.0
+offset_right = 150.0
+offset_bottom = 100.0
+
+[node name="ShipMenuBox" type="VBoxContainer" parent="ShipMenu"]
+
+[node name="PauseMenu" type="Control" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Dim" type="ColorRect" parent="PauseMenu"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.55)
+
+[node name="Center" type="CenterContainer" parent="PauseMenu"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBox" type="VBoxContainer" parent="PauseMenu/Center"]
+theme_override_constants/separation = 6
+
+[node name="PausedLabel" type="Label" parent="PauseMenu/Center/VBox"]
+text = "PAUSED"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+
+[node name="ResumeButton" type="Button" parent="PauseMenu/Center/VBox"]
+text = "Resume"
+theme_override_font_sizes/font_size = 10
+
+[node name="SaveButton" type="Button" parent="PauseMenu/Center/VBox"]
+text = "Save Game"
+theme_override_font_sizes/font_size = 10
+
+[node name="MenuButton" type="Button" parent="PauseMenu/Center/VBox"]
+text = "Save and Quit to Menu"
+theme_override_font_sizes/font_size = 10
+
+[node name="StatusLabel" type="Label" parent="PauseMenu/Center/VBox"]
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 8
 

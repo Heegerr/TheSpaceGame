@@ -14,10 +14,22 @@ then continue with the first unchecked phase.
 - [x] Phase 5 - Return to ship & loop closure (surface -> space, persistent inventory, new seeds)
 - [x] Phase 6 - Placeholder audio (AudioStreamGenerator SFX: laser, footsteps, pickup, hit, engine)
 
-All six phases are complete. Next session: open the project in the Godot editor,
-fix anything the editor reports (code was written without an editor available),
-commit the generated `.uid`/import artifacts, then playtest the full loop:
-fly -> land -> gather -> fight -> return -> land on a different planet.
+All six phases are complete.
+
+## Milestones (second build wave)
+
+- [ ] Milestone 1 - Colony building (build mode B, 4 structures with costs, per-planet persistence, build menu UI)
+- [ ] Milestone 2 - Save/load system (3 slots, main menu New/Continue/Load, autosave on return, manual save via pause menu)
+- [ ] Milestone 3 - Ship upgrades (engine/hull/weapon/cargo tiers) + fleet escorts with follow AI and ship switching
+- [ ] Milestone 4 - Tactical ship combat (combat mode, energy weapons, shields, 3 enemy ship types, escorts join, loot)
+- [ ] Milestone 5 - Wave/threat escalation campaign, boss wave, infinite mode unlock + notifications
+- [ ] Milestone 6 - Hand-crafted story planets injected into the procedural galaxy (2-3 scenes, dialogue triggers, rewards)
+- [ ] Milestone 7 - Grid-based ship builder from parts (stats additive, validation, designs stored in save)
+- [ ] Milestone 8 - GodotSteam integration (init with offline fallback, achievements, cloud saves, graceful degradation)
+
+Notes:
+- M1 stores structures in GameManager.planets (in-memory, per planet seed); M2 makes that durable via save slots.
+- Save schema v3 (slots in user://saves/slot_N.json) already carries planets/ship_upgrades/campaign fields so later milestones do not migrate.
 
 ## Notes for the next session
 

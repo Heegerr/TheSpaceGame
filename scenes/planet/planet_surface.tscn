@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/planet/planet_surface.gd" id="1_surface"]
 [ext_resource type="PackedScene" path="res://scenes/planet/landed_ship.tscn" id="2_landed"]
 [ext_resource type="PackedScene" path="res://scenes/planet/player_on_foot.tscn" id="3_player"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4_hud"]
+[ext_resource type="Script" path="res://scripts/colony/build_controller.gd" id="5_build"]
 
 [node name="PlanetSurface" type="Node2D"]
 script = ExtResource("1_surface")
@@ -13,5 +14,9 @@ script = ExtResource("1_surface")
 [node name="LandedShip" parent="." instance=ExtResource("2_landed")]
 
 [node name="Player" parent="." instance=ExtResource("3_player")]
+
+[node name="BuildController" type="Node2D" parent="."]
+z_index = 40
+script = ExtResource("5_build")
 
 [node name="HUD" parent="." instance=ExtResource("4_hud")]
