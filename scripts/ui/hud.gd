@@ -149,6 +149,23 @@ func show_banner(text: String, color: Color = Color.WHITE) -> void:
 	_banner_tween.tween_property(_banner, "modulate:a", 0.0, 0.6)
 
 
+# -- Dialogue (story planets): banner without auto-fade ------------------------------
+
+func show_dialogue(text: String) -> void:
+	if _banner_tween != null and _banner_tween.is_valid():
+		_banner_tween.kill()
+	_banner.text = text
+	_banner.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))
+	_banner.modulate.a = 1.0
+
+
+func clear_dialogue() -> void:
+	if _banner_tween != null and _banner_tween.is_valid():
+		_banner_tween.kill()
+	_banner_tween = _banner.create_tween()
+	_banner_tween.tween_property(_banner, "modulate:a", 0.0, 0.4)
+
+
 func _create_ship_bars() -> void:
 	_ship_bars = VBoxContainer.new()
 	_ship_bars.anchor_left = 1.0

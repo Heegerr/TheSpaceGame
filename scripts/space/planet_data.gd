@@ -19,6 +19,11 @@ var base_color: Color
 var accent_color: Color
 var atmosphere_color: Color
 
+## Set for hand-authored story planets (see StoryRegistry): landing loads
+## surface_scene instead of the procedural surface.
+var story_id := ""
+var surface_scene := ""
+
 
 static func make(p_seed: int) -> PlanetData:
 	var data := PlanetData.new()

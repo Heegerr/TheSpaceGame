@@ -1,0 +1,33 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/story/ancient_ruins.gd" id="1_ruins"]
+[ext_resource type="PackedScene" path="res://scenes/planet/landed_ship.tscn" id="2_landed"]
+[ext_resource type="PackedScene" path="res://scenes/planet/player_on_foot.tscn" id="3_player"]
+[ext_resource type="Script" path="res://scripts/story/dialogue_trigger.gd" id="4_npc"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5_hud"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_npc"]
+radius = 14.0
+
+[node name="AncientRuins" type="Node2D"]
+script = ExtResource("1_ruins")
+
+[node name="Terrain" type="TileMapLayer" parent="."]
+
+[node name="LandedShip" parent="." instance=ExtResource("2_landed")]
+
+[node name="Player" parent="." instance=ExtResource("3_player")]
+
+[node name="Custodian" type="Area2D" parent="."]
+position = Vector2(528, 240)
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+script = ExtResource("4_npc")
+speaker = "The Custodian"
+lines = PackedStringArray("You walk where the Xeth walked, small traveler.", "They built engines from starlight and alloy... then flew too far.", "Their vault is yours now. Spend it better than they did.")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Custodian"]
+shape = SubResource("CircleShape2D_npc")
+
+[node name="HUD" parent="." instance=ExtResource("5_hud")]

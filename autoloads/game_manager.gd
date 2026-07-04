@@ -57,7 +57,8 @@ func land_on_planet(planet_data: PlanetData, ship: Node2D) -> void:
 	planet_record(planet_data.planet_seed)["visited"] = true
 	planet_changed.emit(current_planet)
 	save_current()
-	get_tree().change_scene_to_file.call_deferred(SURFACE_SCENE)
+	var scene := SURFACE_SCENE if planet_data.surface_scene == "" else planet_data.surface_scene
+	get_tree().change_scene_to_file.call_deferred(scene)
 
 
 func return_to_space() -> void:

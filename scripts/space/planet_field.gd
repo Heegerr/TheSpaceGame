@@ -39,5 +39,14 @@ func generate(galaxy_seed: int) -> void:
 		var planet: SpacePlanet = PLANET_SCENE.instantiate()
 		planet.position = positions[i]
 		add_child(planet)
-		planet.setup(PlanetData.make(hash("%d:%d" % [galaxy_seed, i])))
+		var planet_data := PlanetData.make(hash("%d:%d" % [galaxy_seed, i]))
+		var story := StoryRegistry.story_for_index(i)
+		if not story.is_empty():
+			planet_data.display_name = str(story["name"])
+			planet_data.biome = int(story["biome"])
+			planet_data.radius = float(story["radius"])
+			planet_data.story_id = str(story["id"])
+			planet_data.surface_scene = str(story["scene"])
+			planet_data.atmosphere_color = Color(1.0, 0.85, 0.4, 0.4)
+		planet.setup(planet_data)
 		planets.append(planet)
