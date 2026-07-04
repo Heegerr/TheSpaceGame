@@ -1,15 +1,19 @@
 extends Area2D
-## The player's ship parked on the landing pad. Interacting with it flies back
-## to space — gathered resources persist because they live on the Inventory
-## autoload, and the space scene restores the ship where it was left.
+## The player's ship parked on the landing pad. Boarding it opens the ship
+## menu (upgrades, fleet, launch). Gathered resources persist because they
+## live on the Inventory autoload.
 
 
 func get_prompt() -> String:
-	return "Press E to return to your ship"
+	return "Press E to board your ship"
 
 
 func interact() -> void:
-	GameManager.return_to_space()
+	var hud := get_tree().get_first_node_in_group("hud")
+	if hud != null:
+		hud.show_ship_menu()
+	else:
+		GameManager.return_to_space()
 
 
 func _draw() -> void:

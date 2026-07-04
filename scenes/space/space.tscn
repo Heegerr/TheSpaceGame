@@ -17,4 +17,8 @@ script = ExtResource("3_field")
 
 [node name="PlayerShip" parent="." instance=ExtResource("4_ship")]
 
+[node name="Camera2D" type="Camera2D" parent="."]
+position_smoothing_enabled = true
+position_smoothing_speed = 6.0
+
 [node name="HUD" parent="." instance=ExtResource("5_hud")]

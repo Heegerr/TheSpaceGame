@@ -38,8 +38,11 @@ var ship_state: Dictionary = {}
 ## {"visited": bool, "structures": [{"type": int, "x": int, "y": int}, ...]}
 var planets: Dictionary[String, Dictionary] = {}
 
-## Ship upgrade tiers by category (Milestone 3 fills this in).
+## Ship upgrade tiers by category ("engine", "hull", "weapon", "cargo").
 var ship_upgrades: Dictionary[String, int] = {}
+
+## Number of AI escort ships owned (spawned alongside the flagship in space).
+var fleet_size := 0
 
 ## Campaign progress (Milestone 5 fills this in).
 var campaign: Dictionary = {"stage": 0, "completed": false, "infinite": false, "waves_survived": 0}
@@ -130,6 +133,7 @@ func new_game(slot: int) -> void:
 	ship_state = {}
 	planets = {}
 	ship_upgrades = {}
+	fleet_size = 0
 	campaign = {"stage": 0, "completed": false, "infinite": false, "waves_survived": 0}
 	Inventory.apply_save_data({})
 	Inventory.set_cap_bonus(0)
@@ -230,6 +234,7 @@ func _collect_save_data() -> Dictionary:
 		"inventory": Inventory.get_save_data(),
 		"planets": planets.duplicate(true),
 		"ship_upgrades": ship_upgrades.duplicate(),
+		"fleet_size": fleet_size,
 		"campaign": campaign.duplicate(),
 		"ship": ship_data,
 		"meta": {
@@ -259,6 +264,8 @@ func _apply_save_data(data: Dictionary) -> void:
 	if saved_upgrades is Dictionary:
 		for key in saved_upgrades:
 			ship_upgrades[str(key)] = int(saved_upgrades[key])
+
+	fleet_size = int(data.get("fleet_size", 0))
 
 	var saved_campaign: Variant = data.get("campaign", {})
 	if saved_campaign is Dictionary:
