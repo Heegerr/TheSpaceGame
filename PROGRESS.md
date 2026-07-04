@@ -8,7 +8,7 @@ then continue with the first unchecked phase.
 
 - [x] Phase 0 — git init, remote wired, initial push
 - [x] Phase 1 — Player ship & space movement (ship, starfield parallax, smooth camera, input map)
-- [ ] Phase 2 — Planet generation & landing (planets in space, FastNoiseLite tile surface, on-foot player)
+- [x] Phase 2 — Planet generation & landing (planets in space, FastNoiseLite tile surface, on-foot player)
 - [ ] Phase 3 — Resource gathering (Inventory autoload, gatherable nodes, HUD)
 - [ ] Phase 4 — Basic combat (alien enemy AI, player projectile, health, game over/respawn)
 - [ ] Phase 5 — Return to ship & loop closure (surface -> space, persistent inventory, new seeds)

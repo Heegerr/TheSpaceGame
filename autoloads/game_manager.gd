@@ -1,23 +1,31 @@
 extends Node
-## Global game state singleton, registered as the "GameManager" autoload.
+## Global game flow singleton, registered as the "GameManager" autoload.
 ##
-## Access it from any script:
-##   GameManager.set_current_planet("kepler_prime")
-##   GameManager.add_resource("ore", 5)
-##   GameManager.save_game()
+## Owns the galaxy seed, the space<->surface scene flow, and save/load.
 
-signal planet_changed(planet_id: String)
+signal planet_changed(planet_name: String)
 signal resource_changed(resource_id: String, new_amount: int)
 signal game_saved
 signal game_loaded
 
 const SAVE_PATH := "user://save_game.json"
 const SAVE_VERSION := 1
+const SPACE_SCENE := "res://scenes/space/space.tscn"
+const SURFACE_SCENE := "res://scenes/planet/planet_surface.tscn"
 
-## Id of the planet the player is currently on or orbiting. "" means deep space.
+## Seed for the whole galaxy: planet positions and per-planet seeds derive from it.
+var galaxy_seed: int = 20260704
+
+## Display name of the planet the player is on. "" means flying in space.
 var current_planet: String = ""
 
-## Player resources keyed by id. Add new resource types here as the game grows.
+## Full data of the planet the player is on (null in space).
+var current_planet_data: PlanetData = null
+
+## Where the ship was left in space, so returning from a planet restores it.
+var ship_state: Dictionary = {}
+
+## Player resources keyed by id. (Replaced by the Inventory autoload in Phase 3.)
 var resources: Dictionary[String, int] = {
 	"fuel": 100,
 	"ore": 0,
@@ -25,12 +33,24 @@ var resources: Dictionary[String, int] = {
 }
 
 
-func set_current_planet(planet_id: String) -> void:
-	if planet_id == current_planet:
-		return
-	current_planet = planet_id
-	planet_changed.emit(current_planet)
+# -- Scene flow ----------------------------------------------------------------
 
+func land_on_planet(planet_data: PlanetData, ship: Node2D) -> void:
+	current_planet_data = planet_data
+	current_planet = planet_data.display_name
+	ship_state = {"position": ship.global_position, "rotation": ship.rotation}
+	planet_changed.emit(current_planet)
+	get_tree().change_scene_to_file.call_deferred(SURFACE_SCENE)
+
+
+func return_to_space() -> void:
+	current_planet_data = null
+	current_planet = ""
+	planet_changed.emit(current_planet)
+	get_tree().change_scene_to_file.call_deferred(SPACE_SCENE)
+
+
+# -- Resources (placeholder until the Inventory autoload lands) ------------------
 
 func get_resource(resource_id: String) -> int:
 	return int(resources.get(resource_id, 0))
@@ -41,7 +61,6 @@ func add_resource(resource_id: String, amount: int) -> void:
 	resource_changed.emit(resource_id, resources[resource_id])
 
 
-## Deducts the cost and returns true, or returns false if the player can't afford it.
 func try_spend_resource(resource_id: String, amount: int) -> bool:
 	if get_resource(resource_id) < amount:
 		return false
@@ -49,9 +68,7 @@ func try_spend_resource(resource_id: String, amount: int) -> bool:
 	return true
 
 
-# Save / load ------------------------------------------------------------------
-# Placeholder implementation: a single JSON file in user://. Replace with save
-# slots, versioned migration, etc. later without touching any callers.
+# -- Save / load -----------------------------------------------------------------
 
 func save_game() -> void:
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -78,22 +95,20 @@ func load_game() -> bool:
 	return true
 
 
-## Everything that should persist belongs in this dictionary.
 func _collect_save_data() -> Dictionary:
 	return {
 		"version": SAVE_VERSION,
-		"current_planet": current_planet,
+		"galaxy_seed": galaxy_seed,
 		"resources": resources.duplicate(),
 	}
 
 
 func _apply_save_data(data: Dictionary) -> void:
-	current_planet = str(data.get("current_planet", ""))
-	resources.clear()
+	galaxy_seed = int(data.get("galaxy_seed", galaxy_seed))
 	var saved_resources: Variant = data.get("resources", {})
 	if saved_resources is Dictionary:
+		resources.clear()
 		for resource_id in saved_resources:
 			resources[str(resource_id)] = int(saved_resources[resource_id])
-	planet_changed.emit(current_planet)
 	for resource_id in resources:
 		resource_changed.emit(resource_id, resources[resource_id])

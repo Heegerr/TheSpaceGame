@@ -1,0 +1,44 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/planet/player_on_foot.gd" id="1_walk"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 6.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_reach"]
+radius = 26.0
+
+[node name="Player" type="CharacterBody2D" groups=["player_on_foot"]]
+collision_layer = 2
+collision_mask = 5
+motion_mode = 1
+script = ExtResource("1_walk")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Pack" type="Polygon2D" parent="Visual"]
+color = Color(0.54, 0.56, 0.64, 1)
+polygon = PackedVector2Array(-9, -3, -7, -3, -7, 3, -9, 3)
+
+[node name="Body" type="Polygon2D" parent="Visual"]
+color = Color(0.9, 0.91, 0.95, 1)
+polygon = PackedVector2Array(-5, -7, 5, -7, 7, -3, 7, 5, 4, 8, -4, 8, -7, 5, -7, -3)
+
+[node name="Visor" type="Polygon2D" parent="Visual"]
+color = Color(0.3, 0.76, 1, 1)
+polygon = PackedVector2Array(-4, -5, 4, -5, 4, -1, -4, -1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")
+
+[node name="InteractRange" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractRange"]
+shape = SubResource("CircleShape2D_reach")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0

@@ -1,11 +1,17 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=5 format=3]
 
-[ext_resource type="Script" path="res://scripts/space/starfield.gd" id="1_stars"]
-[ext_resource type="PackedScene" path="res://scenes/space/player_ship.tscn" id="2_ship"]
+[ext_resource type="Script" path="res://scripts/space/space.gd" id="1_space"]
+[ext_resource type="Script" path="res://scripts/space/starfield.gd" id="2_stars"]
+[ext_resource type="Script" path="res://scripts/space/planet_field.gd" id="3_field"]
+[ext_resource type="PackedScene" path="res://scenes/space/player_ship.tscn" id="4_ship"]
 
 [node name="Space" type="Node2D"]
+script = ExtResource("1_space")
 
 [node name="Starfield" type="Node2D" parent="."]
-script = ExtResource("1_stars")
+script = ExtResource("2_stars")
 
-[node name="PlayerShip" parent="." instance=ExtResource("2_ship")]
+[node name="PlanetField" type="Node2D" parent="."]
+script = ExtResource("3_field")
+
+[node name="PlayerShip" parent="." instance=ExtResource("4_ship")]
