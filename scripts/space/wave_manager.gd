@@ -109,8 +109,13 @@ func _wave_cleared() -> void:
 		campaign["completed"] = true
 		campaign["infinite"] = true
 		_hud().show_banner("CAMPAIGN COMPLETE - INFINITE MODE UNLOCKED", Color(0.5, 1.0, 0.6))
+		SteamBridge.unlock("campaign_complete")
 	else:
 		_hud().show_banner("Wave repelled! Colony safe.", Color(0.5, 1.0, 0.6))
+	if int(campaign.get("waves_survived", 0)) == 1:
+		SteamBridge.unlock("first_wave")
+	if bool(campaign.get("infinite", false)) and int(campaign.get("waves_survived", 0)) >= 10:
+		SteamBridge.unlock("infinite_10")
 	Inventory.add("alloy", 2 + int(campaign.get("stage", 0)) / 2)
 	is_boss_wave = false
 	target_planet = null

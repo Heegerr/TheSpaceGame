@@ -15,7 +15,7 @@ There is no build/lint/test toolchain — everything runs through the Godot edit
 - If the editor is open while you edit `project.godot` or `.tscn` files on disk, the editor can overwrite your changes when it saves. Prefer editing those files while the editor is closed, or ask the user to reload the project afterward.
 - The first editor open generates `.uid` files and may normalize hand-written `.tscn`/`project.godot`; commit those artifacts as their own commit.
 - `addons/godot_mcp_enhanced/` is a vendored third-party editor plugin that runs an HTTP server on `localhost:3571` (by default) while the editor is open, exposing scene/script/screenshot/run operations to MCP bridges. Treat it as tooling, not game code — don't modify it or take architectural cues from it.
-- Controls: WASD/arrows move, E interact, Space/LMB attack, R respawn.
+- Controls: WASD/arrows move, E interact, Space/LMB attack, R respawn, B build mode (surface), Tab switch ship (space), Esc pause menu.
 
 ## Architecture
 
@@ -33,7 +33,15 @@ There is no build/lint/test toolchain — everything runs through the Godot edit
 
 **HUD** (`scenes/ui/hud.tscn`, instanced in both space and surface, group `"hud"`): binds itself to `Inventory`/`GameManager` signals; gameplay code reaches it via `get_first_node_in_group("hud")` for `show_hint`/`hide_hint`, and the surface calls `bind_player()` for the health bar and `show_game_over()`.
 
-**Damage pattern:** anything hittable exposes `take_damage(amount, from_position)` (player and enemies); projectiles hit whatever body they touch that has the method. Hit feedback = red `modulate` flash tweened back + `FloatingText.spawn()` (also used for pickups).
+**Damage pattern:** anything hittable exposes `take_damage(amount, from_position)` (player and enemies); projectiles hit whatever body they touch that has the method. Hit feedback = red `modulate` flash tweened back + `FloatingText.spawn()` (also used for pickups). Space combat mirrors this with `take_ship_damage()` and faction-masked `ship_bolt.tscn` (player bolts hit layer 6 "hostile_ship", hostile bolts hit layer 2).
+
+**Second-wave systems** (see PROGRESS.md for milestone status):
+- *Colony building:* `structure.gd` DEFS is the source of truth for the 4 structure types; placements live in `GameManager.planets` (keyed `str(planet_seed)`) and rebuild on landing; `build_controller.gd` owns build mode (B); Habitats define "colonized", Silos + cargo tiers feed `Inventory.set_cap_bonus` via `GameManager.recompute_capacity()`.
+- *Save slots:* 3 JSON slots in `user://saves/slot_N.json` (schema v3), driven by `main_menu.tscn` (New/Continue/Load) and the Esc pause menu (manual save); autosave on every land/return. `current_slot == -1` (running a scene directly from the editor) skips file writes but keeps in-memory state.
+- *Ship upgrades & fleet:* `ShipUpgrades` statics read/write `GameManager.ship_upgrades`; the ship menu opens by boarding the landed ship. `space.gd` owns the roster: flagship + `fleet_size` escorts, Tab switches pilot, the scene-level Camera2D follows the active ship, group `player_fleet` = all friendly ships, `player_ship` = piloted one only (saves read it).
+- *Space combat:* `encounter_manager.gd` (seeded patrols) and `wave_manager.gd` (campaign waves vs colonized planets, boss at stage 5, infinite mode after) both expose engagement flags; `space.gd` aggregates them into `set_combat()` which slows all fleet ships. Wave failure removes a random structure on the target planet.
+- *Story planets:* `StoryRegistry` claims planet-field slot indices (2, 5) and swaps in hand-authored `StoryPlanet` scenes — terrain from ASCII maps, `dialogue_trigger.gd` NPCs, one-time rewards tracked as `story_done` in the planet record. Golden atmosphere ring marks them in space.
+- *Steam:* `SteamBridge` autoload wraps the optional GodotSteam extension (not vendored; see `docs/steam.md`) — everything no-ops without it. Achievements unlock via `SteamBridge.unlock(id)` from GameManager/wave_manager hooks.
 
 ## Pixel-art rendering contract
 

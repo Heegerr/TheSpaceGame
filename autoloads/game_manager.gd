@@ -91,6 +91,8 @@ func structures_on(p_seed: int) -> Array:
 func add_structure(p_seed: int, structure_type: int, cell: Vector2i) -> void:
 	structures_on(p_seed).append({"type": structure_type, "x": cell.x, "y": cell.y})
 	recompute_capacity()
+	if structure_type == StructureScript.Type.HABITAT and colonized_planet_count() == 1:
+		SteamBridge.unlock("first_colony")
 
 
 func count_structures(structure_type: int) -> int:

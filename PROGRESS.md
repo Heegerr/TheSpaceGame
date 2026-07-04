@@ -25,11 +25,36 @@ All six phases are complete.
 - [x] Milestone 5 - Wave/threat escalation campaign, boss wave, infinite mode unlock + notifications
 - [x] Milestone 6 - Hand-crafted story planets injected into the procedural galaxy (2 scenes, dialogue triggers, rewards)
 - [ ] Milestone 7 - Grid-based ship builder from parts (stats additive, validation, designs stored in save)
-- [ ] Milestone 8 - GodotSteam integration (init with offline fallback, achievements, cloud saves, graceful degradation)
+- [x] Milestone 8 - GodotSteam integration scaffold (SteamBridge autoload with offline fallback, achievement hooks, docs/steam.md; the binary GDExtension itself must be downloaded per docs, it is not vendored)
 
 Notes:
 - M1 stores structures in GameManager.planets (in-memory, per planet seed); M2 makes that durable via save slots.
 - Save schema v3 (slots in user://saves/slot_N.json) already carries planets/ship_upgrades/campaign fields so later milestones do not migrate.
+- M8 was done before M7 because it is scaffold-only; M7 is the last open milestone.
+
+## Milestone 7 plan (next session)
+
+1. `scripts/ship/ship_parts.gd` (class_name ShipParts): part defs - HULL_CORE (required, 1 max),
+   HULL_SECTION (+15 hull), ENGINE (+12% speed, required >= 1), WEAPON (+1 damage), CARGO_POD (+15 cap).
+   Each has a resource cost and a color/glyph for the editor grid.
+2. Shipyard UI: new scene `scenes/ui/shipyard.tscn` opened from a "Shipyard" button in the HUD ship
+   menu. 7x7 grid of cell buttons; palette on the right; click cell to place/remove selected part;
+   live stat totals; Build button pays the summed cost.
+3. Validation before Build: exactly one HULL_CORE, at least one ENGINE (spec minimum); optionally
+   4-connectivity to the core.
+4. Persistence: GameManager.ship_designs (Array of {name, cells: [{x, y, part}]}) + active_design
+   index, added to save collect/apply (schema already versioned).
+5. Integration: flagship stats derive from the active design when one exists (extend
+   ShipUpgrades.speed_multiplier/hull_bonus/weapon_bonus to add design bonuses; upgrades remain as
+   the baseline system, per the milestone spec "replace or extend").
+
+## Session-2 recap (2026-07-04)
+
+Milestones 1-6 and 8 are implemented and pushed, one commit each. None of it has been run yet -
+the Godot binary is unavailable in the build environment. First action next session: open the
+editor, fix anything it reports, commit .uid artifacts, then playtest: new game from the main
+menu, gather, build a Habitat (B), survive the first wave, visit XETH-PRIME (story planet with
+golden ring), buy an escort, pick a fight with a patrol.
 
 ## Notes for the next session
 
