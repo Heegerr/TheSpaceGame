@@ -1,6 +1,15 @@
 extends Area2D
-## The player's ship parked on the landing pad of a planet surface.
-## (Interacting with it to return to space arrives in Phase 5.)
+## The player's ship parked on the landing pad. Interacting with it flies back
+## to space — gathered resources persist because they live on the Inventory
+## autoload, and the space scene restores the ship where it was left.
+
+
+func get_prompt() -> String:
+	return "Press E to return to your ship"
+
+
+func interact() -> void:
+	GameManager.return_to_space()
 
 
 func _draw() -> void:

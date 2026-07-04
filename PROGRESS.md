@@ -11,7 +11,7 @@ then continue with the first unchecked phase.
 - [x] Phase 2 - Planet generation & landing (planets in space, FastNoiseLite tile surface, on-foot player)
 - [x] Phase 3 - Resource gathering (Inventory autoload, gatherable nodes, HUD)
 - [x] Phase 4 - Basic combat (alien enemy AI, player projectile, health, game over/respawn)
-- [ ] Phase 5 - Return to ship & loop closure (surface -> space, persistent inventory, new seeds)
+- [x] Phase 5 - Return to ship & loop closure (surface -> space, persistent inventory, new seeds)
 - [ ] Phase 6 - Placeholder audio (AudioStreamGenerator SFX: laser, footsteps, pickup, hit, engine)
 
 ## Notes for the next session

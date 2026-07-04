@@ -26,6 +26,10 @@ var current_planet_data: PlanetData = null
 var ship_state: Dictionary = {}
 
 
+func _ready() -> void:
+	load_game()
+
+
 # -- Scene flow ----------------------------------------------------------------
 
 func land_on_planet(planet_data: PlanetData, ship: Node2D) -> void:
@@ -33,6 +37,7 @@ func land_on_planet(planet_data: PlanetData, ship: Node2D) -> void:
 	current_planet = planet_data.display_name
 	ship_state = {"position": ship.global_position, "rotation": ship.rotation}
 	planet_changed.emit(current_planet)
+	save_game()
 	get_tree().change_scene_to_file.call_deferred(SURFACE_SCENE)
 
 
@@ -40,6 +45,7 @@ func return_to_space() -> void:
 	current_planet_data = null
 	current_planet = ""
 	planet_changed.emit(current_planet)
+	save_game()
 	get_tree().change_scene_to_file.call_deferred(SPACE_SCENE)
 
 
