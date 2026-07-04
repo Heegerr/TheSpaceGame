@@ -11,6 +11,7 @@ const ESCORT_TINT := Color(0.78, 0.9, 1.0)
 @onready var planet_field: Node2D = $PlanetField
 @onready var camera: Camera2D = $Camera2D
 @onready var encounters: Node2D = $EncounterManager
+@onready var waves: Node2D = $WaveManager
 @onready var hud: CanvasLayer = $HUD
 
 var ships: Array[CharacterBody2D] = []
@@ -48,6 +49,7 @@ func set_combat(active: bool) -> void:
 
 
 func _process(_delta: float) -> void:
+	set_combat(encounters.is_any_engaged or waves.is_engaged)
 	camera.global_position = active_ship().global_position
 	var best: SpacePlanet = null
 	var best_distance := INF

@@ -9,6 +9,7 @@ const ENGAGE_DISTANCE := 520.0
 const DISENGAGE_DISTANCE := 950.0
 
 var patrols: Array[Dictionary] = []
+var is_any_engaged := false
 
 @onready var _space: Node2D = get_parent()
 
@@ -62,7 +63,7 @@ func _physics_process(_delta: float) -> void:
 				if is_instance_valid(ship):
 					ship.aggro = false
 		any_engaged = any_engaged or bool(patrol["engaged"])
-	_space.set_combat(any_engaged)
+	is_any_engaged = any_engaged
 
 
 func _pick_kind(rng: RandomNumberGenerator, threat: int) -> int:

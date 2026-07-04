@@ -44,8 +44,8 @@ var ship_upgrades: Dictionary[String, int] = {}
 ## Number of AI escort ships owned (spawned alongside the flagship in space).
 var fleet_size := 0
 
-## Campaign progress (Milestone 5 fills this in).
-var campaign: Dictionary = {"stage": 0, "completed": false, "infinite": false, "waves_survived": 0}
+## Campaign progress: wave escalation stage, boss completion, infinite mode.
+var campaign: Dictionary = {"stage": 0, "completed": false, "infinite": false, "waves_survived": 0, "next_wave_in": 90.0}
 
 
 # -- Scene flow ----------------------------------------------------------------
@@ -116,6 +116,16 @@ func colonist_capacity() -> int:
 	return count_structures(StructureScript.Type.HABITAT) * 2
 
 
+## Wave-failure penalty: a raided colony loses one random structure.
+func remove_random_structure(p_seed: int) -> bool:
+	var list := structures_on(p_seed)
+	if list.is_empty():
+		return false
+	list.remove_at(randi_range(0, list.size() - 1))
+	recompute_capacity()
+	return true
+
+
 ## Storage Silos (+25 each) and cargo upgrades (+25/tier) raise the resource cap.
 func recompute_capacity() -> void:
 	var bonus := count_structures(StructureScript.Type.SILO) * 25
@@ -134,7 +144,7 @@ func new_game(slot: int) -> void:
 	planets = {}
 	ship_upgrades = {}
 	fleet_size = 0
-	campaign = {"stage": 0, "completed": false, "infinite": false, "waves_survived": 0}
+	campaign = {"stage": 0, "completed": false, "infinite": false, "waves_survived": 0, "next_wave_in": 90.0}
 	Inventory.apply_save_data({})
 	Inventory.set_cap_bonus(0)
 	save_current()

@@ -5,17 +5,19 @@ extends CharacterBody2D
 
 signal died(ship: Node)
 
-enum Kind { DART, BRUISER, LANCER }
+enum Kind { DART, BRUISER, LANCER, BOSS }
 
 const STATS: Dictionary[int, Dictionary] = {
 	Kind.DART: {"hull": 12.0, "shield": 0.0, "speed": 300.0, "damage": 1.0, "cooldown": 0.5, "fire_range": 230.0, "preferred": 150.0, "bolt_speed": 420.0},
 	Kind.BRUISER: {"hull": 60.0, "shield": 20.0, "speed": 120.0, "damage": 3.0, "cooldown": 1.4, "fire_range": 270.0, "preferred": 180.0, "bolt_speed": 300.0},
 	Kind.LANCER: {"hull": 20.0, "shield": 0.0, "speed": 170.0, "damage": 4.0, "cooldown": 2.2, "fire_range": 580.0, "preferred": 470.0, "bolt_speed": 260.0},
+	Kind.BOSS: {"hull": 220.0, "shield": 60.0, "speed": 100.0, "damage": 5.0, "cooldown": 0.9, "fire_range": 420.0, "preferred": 260.0, "bolt_speed": 300.0},
 }
 const COLORS: Dictionary[int, Color] = {
 	Kind.DART: Color(1.0, 0.45, 0.35),
 	Kind.BRUISER: Color(0.9, 0.55, 0.2),
 	Kind.LANCER: Color(0.75, 0.4, 1.0),
+	Kind.BOSS: Color(1.0, 0.25, 0.45),
 }
 
 const BOLT_SCENE := preload("res://scenes/space/ship_bolt.tscn")
@@ -50,6 +52,12 @@ func setup(p_kind: int, p_anchor: Vector2) -> void:
 			body_polygon.polygon = PackedVector2Array([Vector2(12, 0), Vector2(4, 10), Vector2(-10, 8), Vector2(-10, -8), Vector2(4, -10)])
 		Kind.LANCER:
 			body_polygon.polygon = PackedVector2Array([Vector2(16, 0), Vector2(-6, 4), Vector2(-12, 0), Vector2(-6, -4)])
+		Kind.BOSS:
+			body_polygon.polygon = PackedVector2Array([Vector2(22, 0), Vector2(10, 14), Vector2(-14, 10), Vector2(-20, 0), Vector2(-14, -10), Vector2(10, -14)])
+			# Bigger hitbox: replace (never mutate) the shared collision shape.
+			var big := CircleShape2D.new()
+			big.radius = 16.0
+			($CollisionShape2D as CollisionShape2D).shape = big
 	_strafe_sign = 1.0 if randf() < 0.5 else -1.0
 
 
@@ -81,6 +89,11 @@ func _physics_process(delta: float) -> void:
 					desired = -dir
 				else:
 					desired = dir.orthogonal() * _strafe_sign * 0.5
+			Kind.BOSS:
+				if distance > preferred:
+					desired = dir
+				else:
+					desired = dir.orthogonal() * _strafe_sign * 0.6
 		velocity = velocity.move_toward(desired * float(stats["speed"]), STEERING * delta)
 		if distance < float(stats["fire_range"]) and _cooldown == 0.0:
 			_cooldown = float(stats["cooldown"])

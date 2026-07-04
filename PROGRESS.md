@@ -22,7 +22,7 @@ All six phases are complete.
 - [x] Milestone 2 - Save/load system (3 slots, main menu New/Continue/Load, autosave on return, manual save via pause menu)
 - [x] Milestone 3 - Ship upgrades (engine/hull/weapon/cargo tiers) + fleet escorts with follow AI and ship switching
 - [x] Milestone 4 - Tactical ship combat (combat mode, energy weapons, shields, 3 enemy ship types, escorts join, loot)
-- [ ] Milestone 5 - Wave/threat escalation campaign, boss wave, infinite mode unlock + notifications
+- [x] Milestone 5 - Wave/threat escalation campaign, boss wave, infinite mode unlock + notifications
 - [ ] Milestone 6 - Hand-crafted story planets injected into the procedural galaxy (2-3 scenes, dialogue triggers, rewards)
 - [ ] Milestone 7 - Grid-based ship builder from parts (stats additive, validation, designs stored in save)
 - [ ] Milestone 8 - GodotSteam integration (init with offline fallback, achievements, cloud saves, graceful degradation)

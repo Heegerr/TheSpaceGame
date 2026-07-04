@@ -45,6 +45,7 @@ var _shield_bar: ProgressBar
 var _energy_bar: ProgressBar
 var _banner: Label
 var _banner_tween: Tween
+var _threat_label: Label
 
 
 func _ready() -> void:
@@ -62,6 +63,9 @@ func _ready() -> void:
 		resources_box.add_child(row)
 		_count_labels[resource_id] = label
 		_update_count(resource_id, Inventory.count(resource_id))
+	_threat_label = Label.new()
+	_threat_label.add_theme_font_size_override("font_size", 8)
+	resources_box.add_child(_threat_label)
 	_create_build_menu()
 	_create_ship_bars()
 	_create_banner()
@@ -116,6 +120,22 @@ func _process(_delta: float) -> void:
 		_shield_bar.value = _space_ship.shield
 		_energy_bar.max_value = _space_ship.MAX_ENERGY
 		_energy_bar.value = _space_ship.energy
+
+
+## Wave countdown readout. Pass negative seconds to hide (no colonies yet).
+func set_threat(seconds: float, stage: int) -> void:
+	if seconds < 0.0:
+		_threat_label.text = ""
+		return
+	_threat_label.text = "Next wave: %ds (stage %d)" % [ceili(maxf(seconds, 0.0)), stage]
+	_threat_label.add_theme_color_override("font_color",
+			Color(1, 0.5, 0.4) if seconds < 15.0 else Color(0.8, 0.85, 0.95))
+
+
+func set_threat_active(seconds: float, remaining_ships: int, boss: bool) -> void:
+	var label := "BOSS WAVE" if boss else "WAVE"
+	_threat_label.text = "%s: %d ships - %ds left" % [label, remaining_ships, ceili(maxf(seconds, 0.0))]
+	_threat_label.add_theme_color_override("font_color", Color(1, 0.4, 0.35))
 
 
 func show_banner(text: String, color: Color = Color.WHITE) -> void:
