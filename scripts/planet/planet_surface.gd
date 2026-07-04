@@ -1,7 +1,7 @@
 extends Node2D
 ## Procedural planet surface: FastNoiseLite-driven 32 px tile terrain generated
-## from the planet's seed, with the landed ship and on-foot player placed on a
-## cleared landing pad.
+## from the planet's seed, with a cleared landing pad, scattered gatherable
+## resources, and the on-foot player.
 
 const MAP_SIZE := 80
 const VARIANT_LOW := TileSetBuilder.VARIANT_LOW
@@ -9,9 +9,21 @@ const VARIANT_GROUND := TileSetBuilder.VARIANT_GROUND
 const VARIANT_ALT := TileSetBuilder.VARIANT_ALT
 const VARIANT_OBSTACLE := TileSetBuilder.VARIANT_OBSTACLE
 
+const RESOURCE_SCENE := preload("res://scenes/planet/resource_node.tscn")
+const RESOURCE_CAP := 80
+const RESOURCE_CHANCE := 0.014
+const PAD_CLEAR_DISTANCE := 96.0
+
+const BIOME_RESOURCE_WEIGHTS: Dictionary[int, Dictionary] = {
+	PlanetData.Biome.GRASS: {"plant": 0.5, "ore": 0.3, "scrap": 0.2},
+	PlanetData.Biome.DESERT: {"scrap": 0.45, "ore": 0.4, "plant": 0.15},
+	PlanetData.Biome.ICE: {"ore": 0.5, "scrap": 0.3, "plant": 0.2},
+}
+
 @onready var terrain: TileMapLayer = $Terrain
 @onready var player: CharacterBody2D = $Player
 @onready var landed_ship: Node2D = $LandedShip
+@onready var hud: CanvasLayer = $HUD
 
 var data: PlanetData
 var pad_position: Vector2
@@ -26,6 +38,7 @@ func _ready() -> void:
 	terrain.tile_set = TileSetBuilder.build()
 	_generate_terrain()
 	_place_pad_and_player()
+	_scatter_resources()
 
 
 func _generate_terrain() -> void:
@@ -100,3 +113,39 @@ func _place_pad_and_player() -> void:
 	camera.limit_right = MAP_SIZE * 32
 	camera.limit_bottom = MAP_SIZE * 32
 	camera.reset_smoothing()
+
+
+func _scatter_resources() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = data.planet_seed + 1
+	var weights: Dictionary = BIOME_RESOURCE_WEIGHTS[data.biome]
+	var placed := 0
+	for y in MAP_SIZE:
+		for x in MAP_SIZE:
+			if placed >= RESOURCE_CAP:
+				return
+			var cell := Vector2i(x, y)
+			if not is_placeable(cell):
+				continue
+			if rng.randf() > RESOURCE_CHANCE:
+				continue
+			var world := terrain.map_to_local(cell)
+			if world.distance_to(pad_position) < PAD_CLEAR_DISTANCE:
+				continue
+			var node := RESOURCE_SCENE.instantiate()
+			node.position = world + Vector2(rng.randf_range(-6.0, 6.0), rng.randf_range(-6.0, 6.0))
+			add_child(node)
+			node.setup(_pick_weighted(rng, weights))
+			placed += 1
+
+
+func _pick_weighted(rng: RandomNumberGenerator, weights: Dictionary) -> String:
+	var total := 0.0
+	for key in weights:
+		total += float(weights[key])
+	var roll := rng.randf() * total
+	for key in weights:
+		roll -= float(weights[key])
+		if roll <= 0.0:
+			return str(key)
+	return "ore"

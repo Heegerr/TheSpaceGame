@@ -1,0 +1,74 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_bg"]
+bg_color = Color(0.1, 0.11, 0.15, 0.85)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_fill"]
+bg_color = Color(0.88, 0.32, 0.3, 1)
+
+[node name="HUD" type="CanvasLayer" groups=["hud"]]
+script = ExtResource("1_hud")
+
+[node name="Resources" type="VBoxContainer" parent="."]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 120.0
+offset_bottom = 80.0
+theme_override_constants/separation = 2
+
+[node name="PlanetLabel" type="Label" parent="."]
+anchor_right = 1.0
+offset_top = 6.0
+offset_bottom = 22.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 10
+
+[node name="HealthBar" type="ProgressBar" parent="."]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -104.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = 18.0
+theme_override_styles/background = SubResource("StyleBoxFlat_hp_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_hp_fill")
+show_percentage = false
+
+[node name="HintLabel" type="Label" parent="."]
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -30.0
+offset_bottom = -14.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 8
+
+[node name="GameOver" type="Control" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Dim" type="ColorRect" parent="GameOver"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.65)
+
+[node name="Center" type="CenterContainer" parent="GameOver"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBox" type="VBoxContainer" parent="GameOver/Center"]
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="GameOver/Center/VBox"]
+text = "YOU DIED"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.92, 0.3, 0.28, 1)
+
+[node name="Subtitle" type="Label" parent="GameOver/Center/VBox"]
+text = "Press R to respawn at your ship"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 10

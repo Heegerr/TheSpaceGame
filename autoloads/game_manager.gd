@@ -2,14 +2,14 @@ extends Node
 ## Global game flow singleton, registered as the "GameManager" autoload.
 ##
 ## Owns the galaxy seed, the space<->surface scene flow, and save/load.
+## Resource counts live in the Inventory autoload (loaded before this one).
 
 signal planet_changed(planet_name: String)
-signal resource_changed(resource_id: String, new_amount: int)
 signal game_saved
 signal game_loaded
 
 const SAVE_PATH := "user://save_game.json"
-const SAVE_VERSION := 1
+const SAVE_VERSION := 2
 const SPACE_SCENE := "res://scenes/space/space.tscn"
 const SURFACE_SCENE := "res://scenes/planet/planet_surface.tscn"
 
@@ -24,13 +24,6 @@ var current_planet_data: PlanetData = null
 
 ## Where the ship was left in space, so returning from a planet restores it.
 var ship_state: Dictionary = {}
-
-## Player resources keyed by id. (Replaced by the Inventory autoload in Phase 3.)
-var resources: Dictionary[String, int] = {
-	"fuel": 100,
-	"ore": 0,
-	"credits": 0,
-}
 
 
 # -- Scene flow ----------------------------------------------------------------
@@ -48,24 +41,6 @@ func return_to_space() -> void:
 	current_planet = ""
 	planet_changed.emit(current_planet)
 	get_tree().change_scene_to_file.call_deferred(SPACE_SCENE)
-
-
-# -- Resources (placeholder until the Inventory autoload lands) ------------------
-
-func get_resource(resource_id: String) -> int:
-	return int(resources.get(resource_id, 0))
-
-
-func add_resource(resource_id: String, amount: int) -> void:
-	resources[resource_id] = get_resource(resource_id) + amount
-	resource_changed.emit(resource_id, resources[resource_id])
-
-
-func try_spend_resource(resource_id: String, amount: int) -> bool:
-	if get_resource(resource_id) < amount:
-		return false
-	add_resource(resource_id, -amount)
-	return true
 
 
 # -- Save / load -----------------------------------------------------------------
@@ -99,16 +74,12 @@ func _collect_save_data() -> Dictionary:
 	return {
 		"version": SAVE_VERSION,
 		"galaxy_seed": galaxy_seed,
-		"resources": resources.duplicate(),
+		"inventory": Inventory.get_save_data(),
 	}
 
 
 func _apply_save_data(data: Dictionary) -> void:
 	galaxy_seed = int(data.get("galaxy_seed", galaxy_seed))
-	var saved_resources: Variant = data.get("resources", {})
-	if saved_resources is Dictionary:
-		resources.clear()
-		for resource_id in saved_resources:
-			resources[str(resource_id)] = int(saved_resources[resource_id])
-	for resource_id in resources:
-		resource_changed.emit(resource_id, resources[resource_id])
+	var saved_inventory: Variant = data.get("inventory", {})
+	if saved_inventory is Dictionary:
+		Inventory.apply_save_data(saved_inventory)
