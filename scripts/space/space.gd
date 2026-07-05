@@ -31,6 +31,7 @@ func _ready() -> void:
 		escort.position = flagship.position + ESCORT_OFFSETS[i % ESCORT_OFFSETS.size()]
 		add_child(escort)
 		escort.is_player_controlled = false
+		escort.is_flagship = false
 		_register_ship(escort)
 	_set_active(0, true)
 

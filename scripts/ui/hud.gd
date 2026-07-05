@@ -4,6 +4,7 @@ extends CanvasLayer
 ## gameplay code can find it. Runs while the tree is paused (pause menu).
 
 const Structure := preload("res://scripts/colony/structure.gd")
+const ShipyardScene := preload("res://scenes/ui/shipyard.tscn")
 
 const RESOURCE_COLORS: Dictionary[String, Color] = {
 	"ore": Color(0.44, 0.89, 0.91),
@@ -46,6 +47,7 @@ var _energy_bar: ProgressBar
 var _banner: Label
 var _banner_tween: Tween
 var _threat_label: Label
+var _shipyard: CanvasLayer
 
 
 func _ready() -> void:
@@ -347,6 +349,10 @@ func _build_ship_menu() -> void:
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
 	buttons.add_theme_constant_override("separation", 12)
+	var shipyard := Button.new()
+	shipyard.text = "Shipyard"
+	shipyard.add_theme_font_size_override("font_size", 10)
+	shipyard.pressed.connect(_on_open_shipyard)
 	var launch := Button.new()
 	launch.text = "Launch"
 	launch.add_theme_font_size_override("font_size", 10)
@@ -355,6 +361,7 @@ func _build_ship_menu() -> void:
 	close.text = "Close"
 	close.add_theme_font_size_override("font_size", 10)
 	close.pressed.connect(hide_ship_menu)
+	buttons.add_child(shipyard)
 	buttons.add_child(launch)
 	buttons.add_child(close)
 	ship_menu_box.add_child(buttons)
@@ -391,6 +398,14 @@ func _on_buy_upgrade(category: String) -> void:
 func _on_buy_escort() -> void:
 	ShipUpgrades.buy_escort()
 	_refresh_ship_menu()
+
+
+func _on_open_shipyard() -> void:
+	if _shipyard == null:
+		_shipyard = ShipyardScene.instantiate()
+		add_child(_shipyard)
+	hide_ship_menu()
+	_shipyard.open()
 
 
 func _on_launch() -> void:

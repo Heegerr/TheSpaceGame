@@ -24,29 +24,28 @@ All six phases are complete.
 - [x] Milestone 4 - Tactical ship combat (combat mode, energy weapons, shields, 3 enemy ship types, escorts join, loot)
 - [x] Milestone 5 - Wave/threat escalation campaign, boss wave, infinite mode unlock + notifications
 - [x] Milestone 6 - Hand-crafted story planets injected into the procedural galaxy (2 scenes, dialogue triggers, rewards)
-- [ ] Milestone 7 - Grid-based ship builder from parts (stats additive, validation, designs stored in save)
+- [x] Milestone 7 - Grid-based ship builder from parts (stats additive, validation, designs stored in save)
 - [x] Milestone 8 - GodotSteam integration scaffold (SteamBridge autoload with offline fallback, achievement hooks, docs/steam.md; the binary GDExtension itself must be downloaded per docs, it is not vendored)
 
 Notes:
 - M1 stores structures in GameManager.planets (in-memory, per planet seed); M2 makes that durable via save slots.
 - Save schema v3 (slots in user://saves/slot_N.json) already carries planets/ship_upgrades/campaign fields so later milestones do not migrate.
-- M8 was done before M7 because it is scaffold-only; M7 is the last open milestone.
+- M7: `scripts/ship/ship_parts.gd` (ShipParts) defines HULL_CORE/HULL_SECTION/ENGINE/WEAPON/CARGO_POD;
+  `scenes/ui/shipyard.tscn` + `scripts/ui/shipyard.gd` is a 7x7 grid builder opened via a "Shipyard"
+  button in the HUD ship menu; validation requires exactly one core, >=1 engine, and 4-connectivity;
+  Build pays the summed cost and writes GameManager.ship_designs[0] (schema v3, no migration needed).
+  Bonuses apply only to the flagship (`player_ship.gd` `is_flagship`, false for escorts) additively on
+  top of ShipUpgrades tiers.
 
-## Milestone 7 plan (next session)
+## Second build wave (Milestones 9-18)
 
-1. `scripts/ship/ship_parts.gd` (class_name ShipParts): part defs - HULL_CORE (required, 1 max),
-   HULL_SECTION (+15 hull), ENGINE (+12% speed, required >= 1), WEAPON (+1 damage), CARGO_POD (+15 cap).
-   Each has a resource cost and a color/glyph for the editor grid.
-2. Shipyard UI: new scene `scenes/ui/shipyard.tscn` opened from a "Shipyard" button in the HUD ship
-   menu. 7x7 grid of cell buttons; palette on the right; click cell to place/remove selected part;
-   live stat totals; Build button pays the summed cost.
-3. Validation before Build: exactly one HULL_CORE, at least one ENGINE (spec minimum); optionally
-   4-connectivity to the core.
-4. Persistence: GameManager.ship_designs (Array of {name, cells: [{x, y, part}]}) + active_design
-   index, added to save collect/apply (schema already versioned).
-5. Integration: flagship stats derive from the active design when one exists (extend
-   ShipUpgrades.speed_multiplier/hull_bonus/weapon_bonus to add design bonuses; upgrades remain as
-   the baseline system, per the milestone spec "replace or extend").
+Requested 2026-07-05: a third build wave extending the second wave's colony/combat systems -
+multi-planet star systems with typed system modifiers (M9-10), expanded biome variety tied to
+system type (M11), a minimap (M12), defense structures (M13), research/tech tree (M14), a
+dedicated storage building (M15), ground unit training via Barracks (M16), space unit training
+via Spaceport (M17), and an enterable ship interior (M18). Being implemented one milestone at a
+time, each its own commit, per session pacing agreed with the user. See git log for progress;
+this file's milestone list will grow as each lands.
 
 ## Session-2 recap (2026-07-04)
 

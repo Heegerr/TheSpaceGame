@@ -44,6 +44,13 @@ var ship_upgrades: Dictionary[String, int] = {}
 ## Number of AI escort ships owned (spawned alongside the flagship in space).
 var fleet_size := 0
 
+## Grid-based ship designs from the Shipyard: Array of {"name": String, "cells": Array}.
+## Only the flagship draws bonuses from the active design.
+var ship_designs: Array = []
+
+## Index into ship_designs applied to the flagship, or -1 for none.
+var active_design_index := -1
+
 ## Campaign progress: wave escalation stage, boss completion, infinite mode.
 var campaign: Dictionary = {"stage": 0, "completed": false, "infinite": false, "waves_survived": 0, "next_wave_in": 90.0}
 
@@ -133,6 +140,7 @@ func remove_random_structure(p_seed: int) -> bool:
 func recompute_capacity() -> void:
 	var bonus := count_structures(StructureScript.Type.SILO) * 25
 	bonus += int(ship_upgrades.get("cargo", 0)) * 25
+	bonus += int(ShipParts.design_bonus().get("cargo", 0))
 	Inventory.set_cap_bonus(bonus)
 
 
@@ -147,6 +155,8 @@ func new_game(slot: int) -> void:
 	planets = {}
 	ship_upgrades = {}
 	fleet_size = 0
+	ship_designs = []
+	active_design_index = -1
 	campaign = {"stage": 0, "completed": false, "infinite": false, "waves_survived": 0, "next_wave_in": 90.0}
 	Inventory.apply_save_data({})
 	Inventory.set_cap_bonus(0)
@@ -248,6 +258,8 @@ func _collect_save_data() -> Dictionary:
 		"planets": planets.duplicate(true),
 		"ship_upgrades": ship_upgrades.duplicate(),
 		"fleet_size": fleet_size,
+		"ship_designs": ship_designs.duplicate(true),
+		"active_design_index": active_design_index,
 		"campaign": campaign.duplicate(),
 		"ship": ship_data,
 		"meta": {
@@ -279,6 +291,14 @@ func _apply_save_data(data: Dictionary) -> void:
 			ship_upgrades[str(key)] = int(saved_upgrades[key])
 
 	fleet_size = int(data.get("fleet_size", 0))
+
+	ship_designs = []
+	var saved_designs: Variant = data.get("ship_designs", [])
+	if saved_designs is Array:
+		for design in saved_designs:
+			if design is Dictionary:
+				ship_designs.append(design)
+	active_design_index = int(data.get("active_design_index", -1))
 
 	var saved_campaign: Variant = data.get("campaign", {})
 	if saved_campaign is Dictionary:

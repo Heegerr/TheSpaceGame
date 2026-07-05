@@ -29,6 +29,8 @@ const ESCORT_FIRE_RANGE := 340.0
 const BOLT_SCENE := preload("res://scenes/space/ship_bolt.tscn")
 
 var is_player_controlled := true
+## Only the flagship (not escorts) draws bonuses from the Shipyard design.
+var is_flagship := true
 var follow_target: Node2D
 var follow_offset := Vector2.ZERO
 var combat_slowdown := false
@@ -49,7 +51,8 @@ func _ready() -> void:
 
 
 func reset_combat_state() -> void:
-	max_hull = BASE_HULL + ShipUpgrades.hull_bonus()
+	var design := ShipParts.design_bonus() if is_flagship else {}
+	max_hull = BASE_HULL + ShipUpgrades.hull_bonus() + float(design.get("hull", 0))
 	hull = max_hull
 	shield = BASE_SHIELD
 	energy = MAX_ENERGY
@@ -64,8 +67,10 @@ func _physics_process(delta: float) -> void:
 		shield = minf(BASE_SHIELD, shield + SHIELD_REGEN * delta)
 
 	var speed_scale := COMBAT_SPEED_SCALE if combat_slowdown else 1.0
-	var max_speed := BASE_MAX_SPEED * ShipUpgrades.speed_multiplier() * speed_scale
-	var acceleration := BASE_ACCELERATION * ShipUpgrades.speed_multiplier() * speed_scale
+	var design_speed := float(ShipParts.design_bonus().get("speed", 0.0)) if is_flagship else 0.0
+	var speed_mult := ShipUpgrades.speed_multiplier() + design_speed
+	var max_speed := BASE_MAX_SPEED * speed_mult * speed_scale
+	var acceleration := BASE_ACCELERATION * speed_mult * speed_scale
 	var thrust := Vector2.ZERO
 	if is_player_controlled:
 		thrust = Input.get_vector("move_left", "move_right", "move_up", "move_down")
@@ -118,7 +123,8 @@ func _try_fire(direction: Vector2) -> void:
 	energy -= SHOT_ENERGY
 	var bolt := BOLT_SCENE.instantiate()
 	bolt.direction = direction
-	bolt.damage = BASE_DAMAGE + ShipUpgrades.weapon_bonus()
+	var design_damage := float(ShipParts.design_bonus().get("damage", 0)) if is_flagship else 0.0
+	bolt.damage = BASE_DAMAGE + ShipUpgrades.weapon_bonus() + design_damage
 	bolt.set_faction(true)
 	bolt.position = position + direction * 16.0
 	get_parent().add_child(bolt)
