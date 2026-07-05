@@ -54,7 +54,11 @@ Notes:
   inside `hud.tscn`, self-detects mode via the player groups and draws icon dots from world
   positions (planets/stars/hostiles/fleet in space; structures/resources/enemies on the ground);
   "toggle_map" (M) expands the top-right corner panel into a centered full map.
-- [ ] Milestone 13 - Defense structures (towers, walls, gates)
+- [x] Milestone 13 - Defense structures: Tower/Wall/Gate added to structure.gd DEFS. Tower
+  reuses the production timer to fire the existing ground projectile at the nearest enemy in
+  range; Wall/Gate ride the existing "every structure blocks layer 1" physics (enemies already
+  collide with it, no pathfinding change needed); Gate toggles its own collision via a child
+  GateInteract Area2D (E to open/close).
 - [ ] Milestone 14 - Research building & tech tree
 - [ ] Milestone 15 - Storage building
 - [ ] Milestone 16 - Barracks (train ground units)

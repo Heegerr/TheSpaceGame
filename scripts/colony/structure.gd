@@ -2,9 +2,14 @@ extends StaticBody2D
 ## A placed colony structure on a planet surface. One scene handles all types;
 ## DEFS is the single source of truth for names, costs, and descriptions.
 ## Production (Miner/Refinery) only ticks while the player is on the planet —
-## offline/background production is a future feature.
+## offline/background production is a future feature. Milestone 13 adds
+## defense structures: Tower (auto-fires the existing projectile at nearby
+## enemies), Wall (a solid blocker - like every structure here it already sits
+## on the "world" physics layer, so enemy CharacterBody2D collision already
+## respects it with no pathfinding changes needed), and Gate (a togglable
+## wall the player can open/close via a child interact hotspot).
 
-enum Type { HABITAT, MINER, REFINERY, SILO }
+enum Type { HABITAT, MINER, REFINERY, SILO, TOWER, WALL, GATE }
 
 const DEFS: Dictionary[int, Dictionary] = {
 	Type.HABITAT: {
@@ -27,12 +32,34 @@ const DEFS: Dictionary[int, Dictionary] = {
 		"desc": "+25 resource cap",
 		"cost": {"ore": 4, "scrap": 4},
 	},
+	Type.TOWER: {
+		"name": "Defense Tower",
+		"desc": "Auto-fires at nearby enemies",
+		"cost": {"ore": 10, "scrap": 6},
+	},
+	Type.WALL: {
+		"name": "Wall",
+		"desc": "Blocks enemy movement",
+		"cost": {"ore": 3, "scrap": 1},
+	},
+	Type.GATE: {
+		"name": "Gate",
+		"desc": "Togglable wall - E to open/close",
+		"cost": {"ore": 5, "scrap": 2},
+	},
 }
 
 const MINER_INTERVAL := 10.0
 const REFINERY_INTERVAL := 12.0
+const TOWER_INTERVAL := 1.1
+const TOWER_RANGE := 170.0
+const TOWER_DAMAGE := 2
+
+const PROJECTILE_SCENE := preload("res://scenes/planet/projectile.tscn")
 
 var type := Type.HABITAT
+## Gate only: true = collision lifted (player and enemies can both pass).
+var gate_open := false
 
 @onready var production_timer: Timer = $ProductionTimer
 
@@ -72,6 +99,27 @@ func setup(structure_type: int) -> void:
 		Type.REFINERY:
 			production_timer.timeout.connect(_on_production)
 			production_timer.start(REFINERY_INTERVAL)
+		Type.TOWER:
+			production_timer.timeout.connect(_on_production)
+			production_timer.start(TOWER_INTERVAL)
+		Type.GATE:
+			var area := GateInteract.new()
+			area.gate = self
+			area.collision_layer = 8
+			area.collision_mask = 0
+			area.monitoring = false
+			var shape := CollisionShape2D.new()
+			var circle := CircleShape2D.new()
+			circle.radius = 16.0
+			shape.shape = circle
+			area.add_child(shape)
+			add_child(area)
+
+
+func toggle_gate() -> void:
+	gate_open = not gate_open
+	collision_layer = 0 if gate_open else 1
+	queue_redraw()
 
 
 func _on_production() -> void:
@@ -84,6 +132,28 @@ func _on_production() -> void:
 			if Inventory.count("alloy") < Inventory.cap() and Inventory.try_spend("ore", 3):
 				Inventory.add("alloy", 1)
 				FloatingText.spawn(get_parent(), global_position + Vector2(0, -18), "+1 Alloy", Color(0.85, 0.55, 0.95))
+		Type.TOWER:
+			_fire_at_nearest_enemy()
+
+
+func _fire_at_nearest_enemy() -> void:
+	var nearest: Node2D = null
+	var nearest_distance := TOWER_RANGE
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if not is_instance_valid(enemy):
+			continue
+		var distance := global_position.distance_to(enemy.global_position)
+		if distance < nearest_distance:
+			nearest_distance = distance
+			nearest = enemy
+	if nearest == null:
+		return
+	var direction := (nearest.global_position - global_position).normalized()
+	var bolt := PROJECTILE_SCENE.instantiate()
+	bolt.direction = direction
+	bolt.damage = TOWER_DAMAGE
+	bolt.position = global_position + direction * 14.0
+	get_parent().add_child(bolt)
 
 
 func _draw() -> void:
@@ -111,3 +181,20 @@ func _draw() -> void:
 			draw_circle(Vector2(0, -12), 8.0, Color(0.85, 0.82, 0.72))
 			draw_line(Vector2(-8, -4), Vector2(8, -4), Color(0.6, 0.57, 0.48), 1.5)
 			draw_line(Vector2(-8, 4), Vector2(8, 4), Color(0.6, 0.57, 0.48), 1.5)
+		Type.TOWER:
+			draw_rect(Rect2(-9, -2, 18, 16), Color(0.42, 0.44, 0.5))
+			draw_rect(Rect2(-4, -14, 8, 13), Color(0.55, 0.58, 0.65))
+			draw_circle(Vector2(0, -14), 5.0, Color(0.88, 0.32, 0.3))
+			draw_arc(Vector2(0, -14), TOWER_RANGE, 0.0, TAU, 48, Color(0.88, 0.32, 0.3, 0.12), 1.0)
+		Type.WALL:
+			draw_rect(Rect2(-16, -10, 32, 20), Color(0.46, 0.44, 0.4))
+			draw_line(Vector2(-16, -3), Vector2(16, -3), Color(0.34, 0.32, 0.29), 1.5)
+			draw_line(Vector2(-16, 4), Vector2(16, 4), Color(0.34, 0.32, 0.29), 1.5)
+		Type.GATE:
+			var gate_color := Color(0.5, 0.62, 0.4) if gate_open else Color(0.55, 0.45, 0.32)
+			draw_rect(Rect2(-16, -12, 6, 24), Color(0.4, 0.38, 0.34))
+			draw_rect(Rect2(10, -12, 6, 24), Color(0.4, 0.38, 0.34))
+			if not gate_open:
+				draw_rect(Rect2(-10, -8, 20, 16), gate_color)
+			else:
+				draw_rect(Rect2(-10, -8, 20, 16), gate_color, false, 1.5)
