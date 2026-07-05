@@ -1,7 +1,10 @@
 extends Node
-## Autoload "Settings": master audio volume and keyboard rebinds. Persists to
-## user://settings.cfg (separate from save slots - these apply regardless of
-## which save is loaded, or none at all from the main menu).
+## Autoload "Settings": master/music audio volume and keyboard rebinds.
+## Persists to user://settings.cfg (separate from save slots - these apply
+## regardless of which save is loaded, or none at all from the main menu).
+## music_volume is read directly by the Music autoload each frame rather than
+## driving a bus, so it stacks with master_volume the usual way (both scale
+## the music, only master_volume touches everything else).
 
 signal keybind_changed(action: String)
 
@@ -23,6 +26,7 @@ const REBINDABLE_ACTIONS: Dictionary[String, String] = {
 }
 
 var master_volume := 1.0
+var music_volume := 0.5
 
 var _default_keycodes: Dictionary[String, int] = {}
 
@@ -41,6 +45,11 @@ func _ready() -> void:
 func set_master_volume(value: float) -> void:
 	master_volume = clampf(value, 0.0, 1.0)
 	_apply_volume()
+	_save()
+
+
+func set_music_volume(value: float) -> void:
+	music_volume = clampf(value, 0.0, 1.0)
 	_save()
 
 
@@ -87,6 +96,7 @@ func key_display_name(action: String) -> String:
 func _save() -> void:
 	var config := ConfigFile.new()
 	config.set_value("audio", "master_volume", master_volume)
+	config.set_value("audio", "music_volume", music_volume)
 	for action in REBINDABLE_ACTIONS:
 		config.set_value("keybinds", action, current_keycode(action))
 	config.save(SETTINGS_PATH)
@@ -97,6 +107,7 @@ func _load() -> void:
 	if config.load(SETTINGS_PATH) != OK:
 		return
 	master_volume = clampf(float(config.get_value("audio", "master_volume", 1.0)), 0.0, 1.0)
+	music_volume = clampf(float(config.get_value("audio", "music_volume", 0.5)), 0.0, 1.0)
 	for action in REBINDABLE_ACTIONS:
 		var keycode: int = int(config.get_value("keybinds", action, current_keycode(action)))
 		if keycode != KEY_NONE:

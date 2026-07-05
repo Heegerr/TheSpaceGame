@@ -5,6 +5,8 @@ extends CanvasLayer
 
 @onready var volume_slider: HSlider = $Panel/Box/VolumeRow/VolumeSlider
 @onready var volume_label: Label = $Panel/Box/VolumeRow/VolumeLabel
+@onready var music_slider: HSlider = $Panel/Box/MusicRow/MusicSlider
+@onready var music_label: Label = $Panel/Box/MusicRow/MusicLabel
 @onready var keybind_list: VBoxContainer = $Panel/Box/Scroll/KeybindList
 @onready var rebind_hint: Label = $Panel/Box/RebindHint
 
@@ -20,6 +22,11 @@ func _ready() -> void:
 	volume_slider.step = 0.01
 	volume_slider.value = Settings.master_volume
 	volume_slider.value_changed.connect(_on_volume_changed)
+	music_slider.min_value = 0.0
+	music_slider.max_value = 1.0
+	music_slider.step = 0.01
+	music_slider.value = Settings.music_volume
+	music_slider.value_changed.connect(_on_music_changed)
 	_build_keybind_rows()
 	$Panel/Box/Buttons/ResetButton.pressed.connect(_on_reset_pressed)
 	$Panel/Box/Buttons/CloseButton.pressed.connect(close)
@@ -29,7 +36,9 @@ func _ready() -> void:
 func open() -> void:
 	_cancel_rebind()
 	volume_slider.value = Settings.master_volume
+	music_slider.value = Settings.music_volume
 	_update_volume_label()
+	_update_music_label()
 	_refresh_keybind_rows()
 	visible = true
 
@@ -46,6 +55,15 @@ func _on_volume_changed(value: float) -> void:
 
 func _update_volume_label() -> void:
 	volume_label.text = "%d%%" % int(round(Settings.master_volume * 100.0))
+
+
+func _on_music_changed(value: float) -> void:
+	Settings.set_music_volume(value)
+	_update_music_label()
+
+
+func _update_music_label() -> void:
+	music_label.text = "%d%%" % int(round(Settings.music_volume * 100.0))
 
 
 func _build_keybind_rows() -> void:

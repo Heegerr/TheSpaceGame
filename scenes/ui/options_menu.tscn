@@ -16,9 +16,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -180.0
-offset_top = -150.0
+offset_top = -160.0
 offset_right = 180.0
-offset_bottom = 150.0
+offset_bottom = 160.0
 
 [node name="Box" type="VBoxContainer" parent="Panel"]
 theme_override_constants/separation = 6
@@ -44,13 +44,29 @@ text = "100%"
 theme_override_font_sizes/font_size = 9
 custom_minimum_size = Vector2(36, 0)
 
+[node name="MusicRow" type="HBoxContainer" parent="Panel/Box"]
+theme_override_constants/separation = 8
+
+[node name="MusicText" type="Label" parent="Panel/Box/MusicRow"]
+text = "Music Volume"
+theme_override_font_sizes/font_size = 9
+size_flags_horizontal = 3
+
+[node name="MusicSlider" type="HSlider" parent="Panel/Box/MusicRow"]
+custom_minimum_size = Vector2(120, 0)
+
+[node name="MusicLabel" type="Label" parent="Panel/Box/MusicRow"]
+text = "50%"
+theme_override_font_sizes/font_size = 9
+custom_minimum_size = Vector2(36, 0)
+
 [node name="KeybindsTitle" type="Label" parent="Panel/Box"]
 text = "Keybinds"
 theme_override_font_sizes/font_size = 10
 theme_override_colors/font_color = Color(0.75, 0.78, 0.85, 1)
 
 [node name="Scroll" type="ScrollContainer" parent="Panel/Box"]
-custom_minimum_size = Vector2(0, 150)
+custom_minimum_size = Vector2(0, 140)
 horizontal_scroll_mode = 0
 
 [node name="KeybindList" type="VBoxContainer" parent="Panel/Box/Scroll"]

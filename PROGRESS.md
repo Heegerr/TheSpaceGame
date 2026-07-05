@@ -121,6 +121,9 @@ golden ring), buy an escort, pick a fight with a patrol.
 - Options menu: `Settings` autoload (master volume via the "Master" audio bus, keyboard rebinds)
   persisted to `user://settings.cfg`; `scenes/ui/options_menu.tscn` opens from an "Options" button
   on both the main menu and the in-game pause menu.
+- Music: `Music` autoload generates a continuous ambient pad (no audio assets yet, same
+  runtime-synthesis approach as `Sfx`), playing in the main menu and every gameplay scene; its own
+  volume slider lives in the Options menu alongside master volume.
 
 ## Notes for the next session
 

@@ -21,6 +21,7 @@ Settings="*res://autoloads/settings.gd"
 Inventory="*res://autoloads/inventory.gd"
 GameManager="*res://autoloads/game_manager.gd"
 Sfx="*res://autoloads/sfx.gd"
+Music="*res://autoloads/music.gd"
 SteamBridge="*res://autoloads/steam_bridge.gd"
 
 [display]
