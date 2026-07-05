@@ -16,8 +16,9 @@ const DEFS: Dictionary[int, Dictionary] = {
 		"nebula": false,
 		"binary": false,
 		"pulse": false,
-		# Even spread across the base biomes (PlanetData.Biome).
-		"biome_weights": {0: 1.0, 1: 1.0, 2: 1.0},
+		# Balanced spread; slightly favors the "common" biomes.
+		# Biome order: GRASS DESERT ICE VOLCANIC SWAMP CRYSTAL BARREN TOXIC FOREST TUNDRA
+		"biome_weights": {0: 1.2, 1: 1.2, 2: 1.0, 3: 0.4, 4: 0.8, 5: 0.4, 6: 1.0, 7: 0.4, 8: 1.2, 9: 1.0},
 	},
 	Type.RED_DWARF: {
 		"name": "Red Dwarf",
@@ -26,8 +27,8 @@ const DEFS: Dictionary[int, Dictionary] = {
 		"nebula": false,
 		"binary": false,
 		"pulse": false,
-		# Cold and dim: skews barren/icy.
-		"biome_weights": {0: 0.3, 1: 0.7, 2: 2.0},
+		# Cold and dim: skews ice/tundra/barren.
+		"biome_weights": {0: 0.4, 1: 0.5, 2: 1.8, 3: 0.1, 4: 0.3, 5: 0.3, 6: 1.6, 7: 0.2, 8: 0.4, 9: 2.0},
 	},
 	Type.BLUE_GIANT: {
 		"name": "Blue Giant",
@@ -36,8 +37,8 @@ const DEFS: Dictionary[int, Dictionary] = {
 		"nebula": false,
 		"binary": false,
 		"pulse": false,
-		# Fierce heat: skews hot/rocky.
-		"biome_weights": {0: 0.4, 1: 2.0, 2: 0.2},
+		# Fierce heat: skews volcanic/desert/toxic.
+		"biome_weights": {0: 0.3, 1: 1.6, 2: 0.2, 3: 2.2, 4: 0.3, 5: 0.5, 6: 1.0, 7: 1.2, 8: 0.2, 9: 0.1},
 	},
 	Type.BINARY: {
 		"name": "Binary System",
@@ -46,7 +47,8 @@ const DEFS: Dictionary[int, Dictionary] = {
 		"nebula": false,
 		"binary": true,
 		"pulse": false,
-		"biome_weights": {0: 1.0, 1: 1.5, 2: 0.8},
+		# Two suns: warm and varied.
+		"biome_weights": {0: 0.8, 1: 1.4, 2: 0.6, 3: 1.6, 4: 0.6, 5: 0.6, 6: 1.0, 7: 0.8, 8: 0.6, 9: 0.4},
 	},
 	Type.NEUTRON_STAR: {
 		"name": "Neutron Star",
@@ -55,8 +57,8 @@ const DEFS: Dictionary[int, Dictionary] = {
 		"nebula": false,
 		"binary": false,
 		"pulse": true,
-		# Sterile and irradiated: mostly barren, some ice.
-		"biome_weights": {0: 0.1, 1: 1.6, 2: 1.2},
+		# Sterile and irradiated: mostly barren/toxic, some crystal.
+		"biome_weights": {0: 0.1, 1: 0.6, 2: 0.8, 3: 0.4, 4: 0.2, 5: 1.4, 6: 2.0, 7: 1.2, 8: 0.1, 9: 0.6},
 	},
 	Type.NEBULA: {
 		"name": "Nebula System",
@@ -65,8 +67,8 @@ const DEFS: Dictionary[int, Dictionary] = {
 		"nebula": true,
 		"binary": false,
 		"pulse": false,
-		# Exotic conditions: favors ice (stand-in for crystal/exotic until Milestone 11).
-		"biome_weights": {0: 0.6, 1: 0.6, 2: 1.8},
+		# Exotic/anomalous conditions: crystal, toxic, swamp.
+		"biome_weights": {0: 0.3, 1: 0.4, 2: 0.6, 3: 0.6, 4: 1.2, 5: 2.2, 6: 0.4, 7: 1.6, 8: 0.3, 9: 0.5},
 	},
 }
 

@@ -11,12 +11,26 @@ const RESOURCE_COLORS: Dictionary[String, Color] = {
 	"plant": Color(0.34, 0.76, 0.37),
 	"scrap": Color(0.77, 0.5, 0.24),
 	"alloy": Color(0.85, 0.55, 0.95),
+	"obsidian": Color(0.85, 0.4, 0.15),
+	"biomass": Color(0.45, 0.65, 0.3),
+	"crystal": Color(0.7, 0.55, 0.95),
+	"silicate": Color(0.65, 0.62, 0.56),
+	"acid": Color(0.65, 0.85, 0.2),
+	"resin": Color(0.85, 0.6, 0.25),
+	"cryo_ore": Color(0.55, 0.8, 0.95),
 }
 const RESOURCE_LABELS: Dictionary[String, String] = {
 	"ore": "Ore",
 	"plant": "Plants",
 	"scrap": "Scrap",
 	"alloy": "Alloy",
+	"obsidian": "Obsidian",
+	"biomass": "Biomass",
+	"crystal": "Crystal",
+	"silicate": "Silicate",
+	"acid": "Acid",
+	"resin": "Resin",
+	"cryo_ore": "Cryo Ore",
 }
 
 @onready var resources_box: VBoxContainer = $Resources
@@ -50,21 +64,19 @@ var _threat_label: Label
 var _shipyard: CanvasLayer
 
 
+## Always-visible resources; biome-exclusive ones (Milestone 11) only get a
+## row once the player has actually collected one, to keep the HUD compact.
+const ALWAYS_SHOWN: Array[String] = ["ore", "plant", "scrap", "alloy"]
+
+
 func _ready() -> void:
-	for resource_id in Inventory.RESOURCE_TYPES:
-		var row := HBoxContainer.new()
-		row.add_theme_constant_override("separation", 4)
-		var swatch := ColorRect.new()
-		swatch.custom_minimum_size = Vector2(8, 8)
-		swatch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		swatch.color = RESOURCE_COLORS.get(resource_id, Color.WHITE)
-		row.add_child(swatch)
-		var label := Label.new()
-		label.add_theme_font_size_override("font_size", 8)
-		row.add_child(label)
-		resources_box.add_child(row)
-		_count_labels[resource_id] = label
+	for resource_id in ALWAYS_SHOWN:
+		_create_resource_row(resource_id)
 		_update_count(resource_id, Inventory.count(resource_id))
+	for resource_id in Inventory.RESOURCE_TYPES:
+		if not (resource_id in ALWAYS_SHOWN) and Inventory.count(resource_id) > 0:
+			_create_resource_row(resource_id)
+			_update_count(resource_id, Inventory.count(resource_id))
 	_threat_label = Label.new()
 	_threat_label.add_theme_font_size_override("font_size", 8)
 	resources_box.add_child(_threat_label)
@@ -287,7 +299,26 @@ func _refresh_build_menu() -> void:
 
 # -- Internal -------------------------------------------------------------------------
 
+func _create_resource_row(resource_id: String) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4)
+	var swatch := ColorRect.new()
+	swatch.custom_minimum_size = Vector2(8, 8)
+	swatch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	swatch.color = RESOURCE_COLORS.get(resource_id, Color.WHITE)
+	row.add_child(swatch)
+	var label := Label.new()
+	label.add_theme_font_size_override("font_size", 8)
+	row.add_child(label)
+	resources_box.add_child(row)
+	if _threat_label != null:
+		resources_box.move_child(_threat_label, resources_box.get_child_count() - 1)
+	_count_labels[resource_id] = label
+
+
 func _update_count(resource_id: String, amount: int) -> void:
+	if not _count_labels.has(resource_id) and amount > 0:
+		_create_resource_row(resource_id)
 	if _count_labels.has(resource_id):
 		_count_labels[resource_id].text = "%s: %d/%d" % [RESOURCE_LABELS.get(resource_id, resource_id), amount, Inventory.cap()]
 	if _build_active:

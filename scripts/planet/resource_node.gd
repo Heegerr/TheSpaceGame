@@ -7,6 +7,13 @@ const DISPLAY_NAMES: Dictionary[String, String] = {
 	"ore": "Ore",
 	"plant": "Plants",
 	"scrap": "Scrap",
+	"obsidian": "Obsidian",
+	"biomass": "Biomass",
+	"crystal": "Crystal",
+	"silicate": "Silicate",
+	"acid": "Acid",
+	"resin": "Resin",
+	"cryo_ore": "Cryo Ore",
 }
 
 var resource_type := "ore"
@@ -70,3 +77,26 @@ func _draw() -> void:
 			draw_colored_polygon(PackedVector2Array([Vector2(-8, 4), Vector2(-2, -8), Vector2(4, -5), Vector2(2, 2)]), Color(0.77, 0.5, 0.24))
 			draw_colored_polygon(PackedVector2Array([Vector2(0, 6), Vector2(6, -2), Vector2(9, 5)]), Color(0.54, 0.35, 0.17))
 			draw_circle(Vector2(1, -2), 1.5, Color(0.91, 0.89, 0.85))
+		"obsidian":
+			draw_colored_polygon(PackedVector2Array([Vector2(-7, 8), Vector2(-3, -9), Vector2(3, -7), Vector2(8, 6), Vector2(0, 9)]), Color(0.12, 0.08, 0.1))
+			draw_colored_polygon(PackedVector2Array([Vector2(-2, -3), Vector2(1, -7), Vector2(2, -1)]), Color(0.9, 0.4, 0.1))
+		"biomass":
+			draw_circle(Vector2(-3, 3), 5.0, Color(0.28, 0.42, 0.28))
+			draw_circle(Vector2(4, 1), 4.0, Color(0.38, 0.52, 0.3))
+			draw_circle(Vector2(0, -5), 3.5, Color(0.45, 0.65, 0.3))
+		"crystal":
+			draw_colored_polygon(PackedVector2Array([Vector2(0, -10), Vector2(6, -2), Vector2(4, 8), Vector2(-4, 8), Vector2(-6, -2)]), Color(0.5, 0.35, 0.7))
+			draw_colored_polygon(PackedVector2Array([Vector2(0, -10), Vector2(6, -2), Vector2(0, 0)]), Color(0.75, 0.6, 0.95))
+		"silicate":
+			draw_colored_polygon(PackedVector2Array([Vector2(-8, 5), Vector2(-4, -6), Vector2(5, -8), Vector2(8, 3), Vector2(2, 8)]), Color(0.5, 0.46, 0.4))
+			draw_colored_polygon(PackedVector2Array([Vector2(-2, -3), Vector2(3, -6), Vector2(4, 0)]), Color(0.65, 0.62, 0.56))
+		"acid":
+			draw_circle(Vector2.ZERO, 7.0, Color(0.35, 0.45, 0.12))
+			draw_circle(Vector2.ZERO, 4.5, Color(0.65, 0.85, 0.2, 0.85))
+			draw_circle(Vector2(-2, -2), 1.5, Color(0.85, 1.0, 0.5))
+		"resin":
+			draw_colored_polygon(PackedVector2Array([Vector2(0, -9), Vector2(5, 1), Vector2(2, 8), Vector2(-2, 8), Vector2(-5, 1)]), Color(0.75, 0.5, 0.15, 0.9))
+			draw_circle(Vector2(-1, -3), 1.5, Color(0.95, 0.8, 0.5, 0.9))
+		"cryo_ore":
+			draw_colored_polygon(PackedVector2Array([Vector2(-8, 4), Vector2(-3, -8), Vector2(4, -6), Vector2(8, 5), Vector2(0, 9)]), Color(0.4, 0.55, 0.65))
+			draw_colored_polygon(PackedVector2Array([Vector2(-2, -3), Vector2(1, -6), Vector2(3, 0)]), Color(0.75, 0.92, 1.0))

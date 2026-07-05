@@ -45,7 +45,11 @@ Notes:
 - [x] Milestone 10 - Star system types: `StarSystemTypes` (6 types) drives Star visuals
   (color/size/nebula tint/binary companion/pulse) and a biome_weights table consumed by
   `PlanetData.make()`; star_type is derived from system_seed, so no save field is needed.
-- [ ] Milestone 11 - Biome variety tied to star system type
+- [x] Milestone 11 - Biome variety tied to star system type: 10 biomes total (grass, desert,
+  ice, volcanic, swamp, crystal, barren, toxic, forest, tundra), each with its own space/tile
+  palette, ambient CanvasModulate tint on the surface, and an exclusive gatherable resource
+  (obsidian/biomass/crystal/silicate/acid/resin/cryo_ore); StarSystemTypes.biome_weights updated
+  to reference all 10 per the M10 system-type themes.
 - [ ] Milestone 12 - Minimap (space and ground)
 - [ ] Milestone 13 - Defense structures (towers, walls, gates)
 - [ ] Milestone 14 - Research building & tech tree

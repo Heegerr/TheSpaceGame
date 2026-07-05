@@ -6,7 +6,10 @@ extends Node
 
 signal changed(resource_id: String, new_amount: int)
 
-const RESOURCE_TYPES: Array[String] = ["ore", "plant", "scrap", "alloy"]
+const RESOURCE_TYPES: Array[String] = [
+	"ore", "plant", "scrap", "alloy",
+	"obsidian", "biomass", "crystal", "silicate", "acid", "resin", "cryo_ore",
+]
 const BASE_CAP := 50
 
 var _counts: Dictionary[String, int] = {}

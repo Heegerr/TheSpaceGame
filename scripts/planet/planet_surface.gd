@@ -21,16 +21,27 @@ const ENEMY_MIN_PAD_DISTANCE := 320.0
 
 const STRUCTURE_SCENE := preload("res://scenes/colony/structure.tscn")
 
+## Milestone 11: each new biome's weight table centers on its own exclusive
+## resource (obsidian/biomass/crystal/silicate/acid/resin/cryo_ore), so that
+## resource never appears anywhere else.
 const BIOME_RESOURCE_WEIGHTS: Dictionary[int, Dictionary] = {
 	PlanetData.Biome.GRASS: {"plant": 0.5, "ore": 0.3, "scrap": 0.2},
 	PlanetData.Biome.DESERT: {"scrap": 0.45, "ore": 0.4, "plant": 0.15},
 	PlanetData.Biome.ICE: {"ore": 0.5, "scrap": 0.3, "plant": 0.2},
+	PlanetData.Biome.VOLCANIC: {"obsidian": 0.6, "ore": 0.25, "scrap": 0.15},
+	PlanetData.Biome.SWAMP: {"biomass": 0.6, "plant": 0.25, "ore": 0.15},
+	PlanetData.Biome.CRYSTAL: {"crystal": 0.65, "ore": 0.2, "scrap": 0.15},
+	PlanetData.Biome.BARREN: {"silicate": 0.55, "ore": 0.3, "scrap": 0.15},
+	PlanetData.Biome.TOXIC: {"acid": 0.6, "scrap": 0.25, "ore": 0.15},
+	PlanetData.Biome.FOREST: {"resin": 0.5, "plant": 0.35, "ore": 0.15},
+	PlanetData.Biome.TUNDRA: {"cryo_ore": 0.55, "ore": 0.25, "plant": 0.2},
 }
 
 @onready var terrain: TileMapLayer = $Terrain
 @onready var player: CharacterBody2D = $Player
 @onready var landed_ship: Node2D = $LandedShip
 @onready var hud: CanvasLayer = $HUD
+@onready var ambient_tint: CanvasModulate = $AmbientTint
 
 var data: PlanetData
 var pad_position: Vector2
@@ -44,6 +55,7 @@ func _ready() -> void:
 		# Scene was run directly (F6) — make a random planet for testing.
 		data = PlanetData.make(randi())
 	terrain.tile_set = TileSetBuilder.build()
+	ambient_tint.color = PlanetData.ambient_tint_for(data.biome)
 	_generate_terrain()
 	_place_pad_and_player()
 	_load_structures()
