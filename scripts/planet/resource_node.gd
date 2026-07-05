@@ -43,12 +43,20 @@ func can_interact() -> bool:
 func interact() -> void:
 	if _depleted:
 		return
+	# Milestone 15: a resource already at cap blocks gathering outright rather
+	# than depleting the node for nothing.
+	if Inventory.is_full(resource_type):
+		FloatingText.spawn(get_parent(), global_position + Vector2(0, -14), "Storage full!", Color(1, 0.4, 0.35))
+		return
 	var amount := randi_range(1, 3)
-	Inventory.add(resource_type, amount)
+	var added := Inventory.add(resource_type, amount)
 	Sfx.play_pickup()
-	FloatingText.spawn(get_parent(), global_position + Vector2(0, -14),
-			"+%d %s" % [amount, DISPLAY_NAMES.get(resource_type, resource_type)],
-			Color(0.65, 0.95, 0.55))
+	var text := "+%d %s" % [added, DISPLAY_NAMES.get(resource_type, resource_type)]
+	var color := Color(0.65, 0.95, 0.55)
+	if added < amount:
+		text += " (capped)"
+		color = Color(1, 0.75, 0.4)
+	FloatingText.spawn(get_parent(), global_position + Vector2(0, -14), text, color)
 	_depleted = true
 	visible = false
 	set_deferred("monitorable", false)

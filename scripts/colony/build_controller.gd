@@ -35,6 +35,13 @@ func _unhandled_input(event: InputEvent) -> void:
 				selected_type = index
 				_notify_hud()
 				get_viewport().set_input_as_handled()
+	elif event is InputEventMouseButton and event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+		# Milestone 15 grew the structure roster past 9 types, so the number
+		# keys alone can no longer reach every entry; wheel cycles through all.
+		var step := -1 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1
+		selected_type = (selected_type + step + Structure.DEFS.size()) % Structure.DEFS.size()
+		_notify_hud()
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("attack"):
 		_try_place(_mouse_cell())
 		get_viewport().set_input_as_handled()

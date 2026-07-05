@@ -64,7 +64,12 @@ Notes:
   TechTree (scripts/colony/tech_tree.gd) holds general upgrades (miners/towers/cargo/engines) plus
   star-type-gated special upgrades (Nebula Shielding, Cryo Hardening), reading PlanetData.star_type
   (now stamped by PlanetField); unlocks persist forever in GameManager.research.unlocked.
-- [ ] Milestone 15 - Storage building
+- [x] Milestone 15 - Storage building: Storage I/II/III are separate placeable tiers
+  (+40/+70/+110 cap) stacking with Silo/cargo/tech-tree bonuses; Inventory.add() now returns the
+  amount actually added so resource_node.gd can block gathering at full cap (or flag a partial
+  "(capped)" gather) with floating text, and the HUD tints a resource row red at cap. Build mode
+  grew past 9 structure types, so mouse wheel now cycles selection alongside the 1-9 keys, and the
+  build menu strip scrolls to keep the selected entry in view.
 - [ ] Milestone 16 - Barracks (train ground units)
 - [ ] Milestone 17 - Spaceport (train space units)
 - [ ] Milestone 18 - Enterable ship interior on planet

@@ -143,6 +143,9 @@ func remove_random_structure(p_seed: int) -> bool:
 ## Storage Silos (+25 each) and cargo upgrades (+25/tier) raise the resource cap.
 func recompute_capacity() -> void:
 	var bonus := count_structures(StructureScript.Type.SILO) * 25
+	bonus += count_structures(StructureScript.Type.STORAGE_1) * 40
+	bonus += count_structures(StructureScript.Type.STORAGE_2) * 70
+	bonus += count_structures(StructureScript.Type.STORAGE_3) * 110
 	bonus += int(ship_upgrades.get("cargo", 0)) * 25
 	bonus += int(ShipParts.design_bonus().get("cargo", 0))
 	bonus += TechTree.cargo_bonus()

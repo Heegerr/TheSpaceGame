@@ -39,7 +39,8 @@ const RESOURCE_LABELS: Dictionary[String, String] = {
 @onready var hint_label: Label = $HintLabel
 @onready var game_over_screen: Control = $GameOver
 @onready var build_menu: PanelContainer = $BuildMenu
-@onready var build_entries: HBoxContainer = $BuildMenu/BuildEntries
+@onready var build_scroll: ScrollContainer = $BuildMenu/BuildScroll
+@onready var build_entries: HBoxContainer = $BuildMenu/BuildScroll/BuildEntries
 @onready var pause_menu: Control = $PauseMenu
 @onready var pause_status: Label = $PauseMenu/Center/VBox/StatusLabel
 @onready var ship_menu: PanelContainer = $ShipMenu
@@ -260,7 +261,7 @@ func set_build_menu(active: bool, selected: int) -> void:
 	build_menu.visible = active
 	if active:
 		_refresh_build_menu()
-		show_hint("Click to place - 1-4 to select - B to exit build mode")
+		show_hint("Click to place - number keys/scroll wheel to select - B to exit build mode")
 	else:
 		hide_hint()
 
@@ -272,7 +273,10 @@ func _create_build_menu() -> void:
 		var box := VBoxContainer.new()
 		var title := Label.new()
 		title.add_theme_font_size_override("font_size", 8)
-		title.text = "[%d] %s" % [structure_type + 1, def["name"]]
+		# Only the first 9 types have a number-key shortcut (1-9); the rest
+		# are reachable by scroll wheel (see build_controller.gd).
+		var key_hint := "[%d] " % (structure_type + 1) if structure_type < 9 else ""
+		title.text = "%s%s" % [key_hint, def["name"]]
 		var cost := Label.new()
 		cost.add_theme_font_size_override("font_size", 8)
 		cost.text = _cost_text(def["cost"])
@@ -284,7 +288,7 @@ func _create_build_menu() -> void:
 		box.add_child(cost)
 		box.add_child(desc)
 		build_entries.add_child(box)
-		_build_rows.append({"type": structure_type, "title": title, "cost": cost})
+		_build_rows.append({"type": structure_type, "title": title, "cost": cost, "box": box})
 
 
 func _cost_text(cost: Dictionary) -> String:
@@ -302,6 +306,8 @@ func _refresh_build_menu() -> void:
 		row["title"].add_theme_color_override("font_color", Color(1, 0.9, 0.4) if selected else Color.WHITE)
 		row["cost"].add_theme_color_override("font_color",
 				Color(0.6, 1, 0.6) if Structure.can_afford(row["type"]) else Color(1, 0.45, 0.4))
+		if selected:
+			build_scroll.ensure_control_visible(row["box"])
 
 
 # -- Internal -------------------------------------------------------------------------
@@ -327,7 +333,11 @@ func _update_count(resource_id: String, amount: int) -> void:
 	if not _count_labels.has(resource_id) and amount > 0:
 		_create_resource_row(resource_id)
 	if _count_labels.has(resource_id):
-		_count_labels[resource_id].text = "%s: %d/%d" % [RESOURCE_LABELS.get(resource_id, resource_id), amount, Inventory.cap()]
+		var label: Label = _count_labels[resource_id]
+		label.text = "%s: %d/%d" % [RESOURCE_LABELS.get(resource_id, resource_id), amount, Inventory.cap()]
+		# Milestone 15: flag a full resource so the player notices before the
+		# next gather gets blocked/wasted.
+		label.add_theme_color_override("font_color", Color(1, 0.55, 0.4) if amount >= Inventory.cap() else Color.WHITE)
 	if _build_active:
 		_refresh_build_menu()
 	if ship_menu.visible:

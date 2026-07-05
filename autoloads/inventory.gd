@@ -38,9 +38,17 @@ func count(resource_id: String) -> int:
 	return int(_counts.get(resource_id, 0))
 
 
-func add(resource_id: String, amount: int) -> void:
-	_counts[resource_id] = clampi(count(resource_id) + amount, 0, cap())
+## Returns the amount actually added (may be less than requested if the cap
+## was hit - see resource_node.gd, which surfaces that as "capped" feedback).
+func add(resource_id: String, amount: int) -> int:
+	var before := count(resource_id)
+	_counts[resource_id] = clampi(before + amount, 0, cap())
 	changed.emit(resource_id, _counts[resource_id])
+	return _counts[resource_id] - before
+
+
+func is_full(resource_id: String) -> bool:
+	return count(resource_id) >= cap()
 
 
 func try_spend(resource_id: String, amount: int) -> bool:

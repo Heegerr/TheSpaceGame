@@ -9,7 +9,7 @@ extends StaticBody2D
 ## respects it with no pathfinding changes needed), and Gate (a togglable
 ## wall the player can open/close via a child interact hotspot).
 
-enum Type { HABITAT, MINER, REFINERY, SILO, TOWER, WALL, GATE, RESEARCH }
+enum Type { HABITAT, MINER, REFINERY, SILO, TOWER, WALL, GATE, RESEARCH, STORAGE_1, STORAGE_2, STORAGE_3 }
 
 const DEFS: Dictionary[int, Dictionary] = {
 	Type.HABITAT: {
@@ -51,6 +51,21 @@ const DEFS: Dictionary[int, Dictionary] = {
 		"name": "Research Building",
 		"desc": "Generates research points - E for tech tree",
 		"cost": {"ore": 12, "alloy": 3, "scrap": 6},
+	},
+	Type.STORAGE_1: {
+		"name": "Storage I",
+		"desc": "+40 resource cap",
+		"cost": {"ore": 8, "scrap": 6},
+	},
+	Type.STORAGE_2: {
+		"name": "Storage II",
+		"desc": "+70 resource cap",
+		"cost": {"ore": 16, "scrap": 10, "alloy": 3},
+	},
+	Type.STORAGE_3: {
+		"name": "Storage III",
+		"desc": "+110 resource cap",
+		"cost": {"ore": 26, "scrap": 16, "alloy": 8},
 	},
 }
 
@@ -222,3 +237,16 @@ func _draw() -> void:
 			draw_arc(Vector2(0, -8), 9.0, PI, TAU, 16, Color(0.6, 0.85, 1.0), 1.5)
 			draw_line(Vector2(0, -17), Vector2(0, -24), Color(0.6, 0.85, 1.0), 1.5)
 			draw_circle(Vector2(0, -24), 2.0, Color(0.7, 0.95, 1.0))
+		Type.STORAGE_1, Type.STORAGE_2, Type.STORAGE_3:
+			_draw_storage(type - Type.STORAGE_1 + 1)
+
+
+func _draw_storage(tier: int) -> void:
+	var half_width := 9.0 + tier * 2.0
+	var height := 18.0 + tier * 4.0
+	var crate := Color(0.62, 0.5, 0.34)
+	draw_rect(Rect2(-half_width, -height, half_width * 2.0, height), crate)
+	draw_rect(Rect2(-half_width, -height, half_width * 2.0, height), crate.darkened(0.3), false, 1.5)
+	for band in tier:
+		var y := -height + 4.0 + band * (height - 8.0) / maxf(1.0, float(tier))
+		draw_line(Vector2(-half_width, y), Vector2(half_width, y), crate.darkened(0.4), 1.0)
