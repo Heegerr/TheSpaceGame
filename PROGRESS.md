@@ -75,7 +75,14 @@ Notes:
   instances (group player_units) guard their spawn point, auto-engage the nearest enemy (melee or,
   for the Ranger, the existing ground projectile), and the HUD Barracks panel's Follow Me/Defend
   Base buttons toggle every unit's mode at once.
-- [ ] Milestone 17 - Spaceport (train space units)
+- [x] Milestone 17 - Spaceport (train space units): shares Barracks' training-queue machinery
+  (branches on type) with SpaceportShips (Interceptor/Gunship/Support Ship); finished ships join
+  GameManager.spaceport_fleet (persisted) and spawn alongside ordinary escorts next time
+  space.gd loads, via player_ship.gd's apply_spaceport_kind() (stat multipliers; Support Ship
+  repairs the fleet instead of firing). They're regular player_fleet members, so M3's
+  follow/defend/engage AI and ship-switching already apply with no new command UI. Also fixes a
+  group-name mismatch from Milestone 12: minimap now reads the pre-existing "hostile_ships" group
+  (enemy_ship.tscn) instead of a redundant "hostile_ship" this project added.
 - [ ] Milestone 18 - Enterable ship interior on planet
 
 Requested 2026-07-05: a third build wave extending the second wave's colony/combat systems -

@@ -35,6 +35,15 @@ var follow_target: Node2D
 var follow_offset := Vector2.ZERO
 var combat_slowdown := false
 
+## Milestone 17: set via apply_spaceport_kind() for Spaceport-trained escorts.
+var spaceport_kind := ""
+var _speed_mult := 1.0
+var _hull_mult := 1.0
+var _damage_mult := 1.0
+var _is_support := false
+const SUPPORT_RANGE := 260.0
+const SUPPORT_REPAIR_RATE := 6.0
+
 var max_hull := BASE_HULL
 var hull := BASE_HULL
 var max_shield := BASE_SHIELD
@@ -51,11 +60,24 @@ func _ready() -> void:
 	reset_combat_state()
 
 
+## Spaceport-trained escorts (Milestone 17) only: apply the kind's stat
+## multipliers and, for the Support Ship, switch off attacking in favor of
+## repairing nearby fleet ships.
+func apply_spaceport_kind(kind: String) -> void:
+	spaceport_kind = kind
+	var def: Dictionary = SpaceportShips.DEFS[kind]
+	_speed_mult = float(def["speed_mult"])
+	_hull_mult = float(def["hull_mult"])
+	_damage_mult = float(def["damage_mult"])
+	_is_support = str(def["role"]) == "support"
+	reset_combat_state()
+
+
 func reset_combat_state() -> void:
 	var design := ShipParts.design_bonus() if is_flagship else {}
 	var tech_hull := TechTree.flagship_hull_bonus() if is_flagship else 0.0
 	var tech_shield := TechTree.flagship_shield_bonus() if is_flagship else 0.0
-	max_hull = BASE_HULL + ShipUpgrades.hull_bonus() + float(design.get("hull", 0)) + tech_hull
+	max_hull = (BASE_HULL + ShipUpgrades.hull_bonus() + float(design.get("hull", 0)) + tech_hull) * _hull_mult
 	hull = max_hull
 	max_shield = BASE_SHIELD + tech_shield
 	shield = max_shield
@@ -72,7 +94,7 @@ func _physics_process(delta: float) -> void:
 
 	var speed_scale := COMBAT_SPEED_SCALE if combat_slowdown else 1.0
 	var design_speed := float(ShipParts.design_bonus().get("speed", 0.0)) if is_flagship else 0.0
-	var speed_mult := ShipUpgrades.speed_multiplier() + design_speed + TechTree.engine_speed_bonus()
+	var speed_mult := (ShipUpgrades.speed_multiplier() + design_speed + TechTree.engine_speed_bonus()) * _speed_mult
 	var max_speed := BASE_MAX_SPEED * speed_mult * speed_scale
 	var acceleration := BASE_ACCELERATION * speed_mult * speed_scale
 	var thrust := Vector2.ZERO
@@ -81,6 +103,9 @@ func _physics_process(delta: float) -> void:
 		Sfx.set_engine_thrust(thrust.length())
 		if Input.is_action_pressed("attack"):
 			_try_fire((get_global_mouse_position() - global_position).normalized())
+	elif _is_support:
+		thrust = _escort_thrust()
+		_try_repair(delta)
 	else:
 		thrust = _escort_thrust()
 		var hostile := _nearest_hostile(ESCORT_FIRE_RANGE)
@@ -128,7 +153,7 @@ func _try_fire(direction: Vector2) -> void:
 	var bolt := BOLT_SCENE.instantiate()
 	bolt.direction = direction
 	var design_damage := float(ShipParts.design_bonus().get("damage", 0)) if is_flagship else 0.0
-	bolt.damage = BASE_DAMAGE + ShipUpgrades.weapon_bonus() + design_damage
+	bolt.damage = (BASE_DAMAGE + ShipUpgrades.weapon_bonus() + design_damage) * _damage_mult
 	bolt.set_faction(true)
 	bolt.position = position + direction * 16.0
 	get_parent().add_child(bolt)
@@ -150,6 +175,25 @@ func _escort_thrust() -> Vector2:
 	if to_goal.length() > FOLLOW_ARRIVE_RADIUS:
 		return to_goal.normalized()
 	return to_goal / FOLLOW_ARRIVE_RADIUS * 0.35
+
+
+## Support Ship only: slowly repairs the most-damaged nearby fleet ship
+## (itself included) instead of attacking.
+func _try_repair(delta: float) -> void:
+	var best: Node2D = null
+	var best_ratio := 1.0
+	for node in get_tree().get_nodes_in_group("player_fleet"):
+		if not (node is Node2D) or not is_instance_valid(node):
+			continue
+		var ship_node := node as Node2D
+		if global_position.distance_to(ship_node.global_position) > SUPPORT_RANGE:
+			continue
+		var ratio: float = float(ship_node.get("hull")) / maxf(1.0, float(ship_node.get("max_hull")))
+		if ratio < best_ratio:
+			best_ratio = ratio
+			best = ship_node
+	if best != null and best_ratio < 1.0:
+		best.set("hull", minf(float(best.get("max_hull")), float(best.get("hull")) + SUPPORT_REPAIR_RATE * delta))
 
 
 func _nearest_hostile(radius: float) -> Node2D:

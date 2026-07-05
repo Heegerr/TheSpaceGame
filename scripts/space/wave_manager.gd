@@ -86,7 +86,6 @@ func _launch_wave() -> void:
 		var enemy := ENEMY_SCENE.instantiate()
 		enemy.position = target_planet.position + Vector2.from_angle(rng.randf_range(0.0, TAU)) * 900.0
 		add_child(enemy)
-		enemy.add_to_group("hostile_ship")
 		enemy.setup(kind, target_planet.position)
 		enemy.aggro = true
 		enemy.died.connect(_on_wave_ship_died)

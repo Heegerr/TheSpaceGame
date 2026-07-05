@@ -106,7 +106,7 @@ func _draw_space(ship: Node2D, panel_size: Vector2) -> void:
 				color = Color(1.0, 0.85, 0.35)
 			_dot(planet.position, ship.position, center, scale_f, radius, color, 2.2)
 
-	for hostile in get_tree().get_nodes_in_group("hostile_ship"):
+	for hostile in get_tree().get_nodes_in_group("hostile_ships"):
 		if hostile is Node2D and is_instance_valid(hostile):
 			_dot((hostile as Node2D).position, ship.position, center, scale_f, radius, Color(1.0, 0.3, 0.3), 2.0)
 

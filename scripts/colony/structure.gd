@@ -9,7 +9,7 @@ extends StaticBody2D
 ## respects it with no pathfinding changes needed), and Gate (a togglable
 ## wall the player can open/close via a child interact hotspot).
 
-enum Type { HABITAT, MINER, REFINERY, SILO, TOWER, WALL, GATE, RESEARCH, STORAGE_1, STORAGE_2, STORAGE_3, BARRACKS }
+enum Type { HABITAT, MINER, REFINERY, SILO, TOWER, WALL, GATE, RESEARCH, STORAGE_1, STORAGE_2, STORAGE_3, BARRACKS, SPACEPORT }
 
 const DEFS: Dictionary[int, Dictionary] = {
 	Type.HABITAT: {
@@ -71,6 +71,11 @@ const DEFS: Dictionary[int, Dictionary] = {
 		"name": "Barracks",
 		"desc": "Train ground units - E for barracks",
 		"cost": {"ore": 15, "scrap": 8, "alloy": 2},
+	},
+	Type.SPACEPORT: {
+		"name": "Spaceport",
+		"desc": "Train combat ships - E for spaceport (needs a Habitat)",
+		"cost": {"ore": 20, "scrap": 10, "alloy": 5},
 	},
 }
 
@@ -146,6 +151,11 @@ func setup(structure_type: int) -> void:
 			var barracks_area := BarracksInteract.new()
 			barracks_area.barracks = self
 			_add_interact_area(barracks_area)
+		Type.SPACEPORT:
+			train_timer.timeout.connect(_on_train_complete)
+			var spaceport_area := SpaceportInteract.new()
+			spaceport_area.spaceport = self
+			_add_interact_area(spaceport_area)
 
 
 func _add_interact_area(area: Area2D) -> void:
@@ -166,11 +176,18 @@ func toggle_gate() -> void:
 	queue_redraw()
 
 
-## Barracks only: pays the unit's cost and enqueues training.
-func queue_train(unit_id: String) -> bool:
-	if not GroundUnits.pay_cost(unit_id):
+## Barracks/Spaceport only: pays the unit or ship kind's cost and enqueues
+## training (one at a time, on the shared TrainTimer).
+func queue_train(id: String) -> bool:
+	var paid := false
+	match type:
+		Type.BARRACKS:
+			paid = GroundUnits.pay_cost(id)
+		Type.SPACEPORT:
+			paid = SpaceportShips.pay_cost(id)
+	if not paid:
 		return false
-	_train_queue.append(unit_id)
+	_train_queue.append(id)
 	if train_timer.is_stopped():
 		_start_next_training()
 	return true
@@ -183,19 +200,30 @@ func train_queue_length() -> int:
 func _start_next_training() -> void:
 	if _train_queue.is_empty():
 		return
-	train_timer.start(float(GroundUnits.DEFS[_train_queue[0]]["train_time"]))
+	var id: String = _train_queue[0]
+	match type:
+		Type.BARRACKS:
+			train_timer.start(float(GroundUnits.DEFS[id]["train_time"]))
+		Type.SPACEPORT:
+			train_timer.start(float(SpaceportShips.DEFS[id]["build_time"]))
 
 
 func _on_train_complete() -> void:
 	if _train_queue.is_empty():
 		return
 	var id: String = _train_queue.pop_front()
-	var unit := ALLY_UNIT_SCENE.instantiate()
-	get_parent().add_child(unit)
-	var spawn := global_position + Vector2(randf_range(-20.0, 20.0), 26.0 + randf_range(-6.0, 6.0))
-	unit.setup(id, spawn)
-	FloatingText.spawn(get_parent(), global_position + Vector2(0, -18),
-			"%s trained!" % str(GroundUnits.DEFS[id]["name"]), Color(0.6, 0.85, 1.0))
+	match type:
+		Type.BARRACKS:
+			var unit := ALLY_UNIT_SCENE.instantiate()
+			get_parent().add_child(unit)
+			var spawn := global_position + Vector2(randf_range(-20.0, 20.0), 26.0 + randf_range(-6.0, 6.0))
+			unit.setup(id, spawn)
+			FloatingText.spawn(get_parent(), global_position + Vector2(0, -18),
+					"%s trained!" % str(GroundUnits.DEFS[id]["name"]), Color(0.6, 0.85, 1.0))
+		Type.SPACEPORT:
+			GameManager.spaceport_fleet.append(id)
+			FloatingText.spawn(get_parent(), global_position + Vector2(0, -18),
+					"%s ready for launch!" % str(SpaceportShips.DEFS[id]["name"]), Color(0.6, 0.85, 1.0))
 	_start_next_training()
 
 
@@ -293,6 +321,12 @@ func _draw() -> void:
 			draw_rect(Rect2(-3, 2, 6, 10), Color(0.3, 0.26, 0.2))
 			draw_line(Vector2(10, -16), Vector2(10, -26), Color(0.6, 0.58, 0.5), 1.5)
 			draw_colored_polygon(PackedVector2Array([Vector2(10, -26), Vector2(18, -23), Vector2(10, -20)]), Color(0.85, 0.35, 0.3))
+		Type.SPACEPORT:
+			draw_rect(Rect2(-15, 2, 30, 10), Color(0.4, 0.42, 0.48))
+			draw_colored_polygon(PackedVector2Array([Vector2(-6, 2), Vector2(-2, -18), Vector2(2, -18), Vector2(6, 2)]), Color(0.58, 0.6, 0.68))
+			draw_colored_polygon(PackedVector2Array([Vector2(-2, -18), Vector2(0, -26), Vector2(2, -18)]), Color(0.9, 0.55, 0.25))
+			draw_circle(Vector2(-10, 4), 3.0, Color(0.44, 0.89, 0.91))
+			draw_circle(Vector2(10, 4), 3.0, Color(0.44, 0.89, 0.91))
 
 
 func _draw_storage(tier: int) -> void:

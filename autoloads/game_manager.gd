@@ -55,6 +55,11 @@ var active_design_index := -1
 ## the set of permanently-unlocked upgrade ids (TechTree.GENERAL/SPECIAL).
 var research: Dictionary = {"points": 0.0, "unlocked": {}}
 
+## Spaceport-trained ship kind ids (Milestone 17) still alive; space.gd spawns
+## one escort per entry alongside the plain ShipUpgrades-based escorts, and
+## removes an entry when that specific ship is destroyed.
+var spaceport_fleet: Array[String] = []
+
 ## Campaign progress: wave escalation stage, boss completion, infinite mode.
 var campaign: Dictionary = {"stage": 0, "completed": false, "infinite": false, "waves_survived": 0, "next_wave_in": 90.0}
 
@@ -115,6 +120,14 @@ func count_structures(structure_type: int) -> int:
 	return total
 
 
+## Milestone 17: Spaceport requires the planet to already be colonized.
+func planet_has_habitat(p_seed: int) -> bool:
+	for entry in structures_on(p_seed):
+		if int(entry.get("type", -1)) == StructureScript.Type.HABITAT:
+			return true
+	return false
+
+
 ## A planet counts as colonized once it has a Habitat.
 func colonized_planet_count() -> int:
 	var total := 0
@@ -166,6 +179,7 @@ func new_game(slot: int) -> void:
 	ship_designs = []
 	active_design_index = -1
 	research = {"points": 0.0, "unlocked": {}}
+	spaceport_fleet = []
 	campaign = {"stage": 0, "completed": false, "infinite": false, "waves_survived": 0, "next_wave_in": 90.0}
 	Inventory.apply_save_data({})
 	Inventory.set_cap_bonus(0)
@@ -270,6 +284,7 @@ func _collect_save_data() -> Dictionary:
 		"ship_designs": ship_designs.duplicate(true),
 		"active_design_index": active_design_index,
 		"research": research.duplicate(true),
+		"spaceport_fleet": spaceport_fleet.duplicate(),
 		"campaign": campaign.duplicate(),
 		"ship": ship_data,
 		"meta": {
@@ -318,6 +333,12 @@ func _apply_save_data(data: Dictionary) -> void:
 		if saved_unlocked is Dictionary:
 			for key in saved_unlocked:
 				research["unlocked"][str(key)] = bool(saved_unlocked[key])
+
+	spaceport_fleet = []
+	var saved_spaceport: Variant = data.get("spaceport_fleet", [])
+	if saved_spaceport is Array:
+		for kind in saved_spaceport:
+			spaceport_fleet.append(str(kind))
 
 	var saved_campaign: Variant = data.get("campaign", {})
 	if saved_campaign is Dictionary:

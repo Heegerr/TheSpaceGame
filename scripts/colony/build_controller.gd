@@ -89,6 +89,9 @@ func _can_place(cell: Vector2i) -> bool:
 		return false
 	if _terrain.map_to_local(cell).distance_to(_surface.pad_position) < PAD_KEEPOUT:
 		return false
+	# Milestone 17: Spaceport requires the planet to already be colonized.
+	if selected_type == Structure.Type.SPACEPORT and not GameManager.planet_has_habitat(_surface.data.planet_seed):
+		return false
 	return true
 
 

@@ -103,6 +103,19 @@ offset_bottom = 120.0
 
 [node name="BarracksBox" type="VBoxContainer" parent="Barracks"]
 
+[node name="Spaceport" type="PanelContainer" parent="."]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -110.0
+offset_right = 160.0
+offset_bottom = 110.0
+
+[node name="SpaceportBox" type="VBoxContainer" parent="Spaceport"]
+
 [node name="PauseMenu" type="Control" parent="."]
 visible = false
 anchor_right = 1.0

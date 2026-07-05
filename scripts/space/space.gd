@@ -33,6 +33,15 @@ func _ready() -> void:
 		escort.is_player_controlled = false
 		escort.is_flagship = false
 		_register_ship(escort)
+	for i in GameManager.spaceport_fleet.size():
+		var slot := GameManager.fleet_size + i
+		var ship: CharacterBody2D = SHIP_SCENE.instantiate()
+		ship.position = flagship.position + ESCORT_OFFSETS[slot % ESCORT_OFFSETS.size()]
+		add_child(ship)
+		ship.is_player_controlled = false
+		ship.is_flagship = false
+		ship.apply_spaceport_kind(GameManager.spaceport_fleet[i])
+		_register_ship(ship)
 	_set_active(0, true)
 
 
@@ -127,8 +136,13 @@ func _on_ship_destroyed(ship: CharacterBody2D) -> void:
 			camera.global_position = ship.global_position
 			camera.reset_smoothing()
 		return
-	hud.show_banner("Escort lost", Color(1, 0.6, 0.4))
-	GameManager.fleet_size = maxi(0, GameManager.fleet_size - 1)
+	var kind: String = ship.get("spaceport_kind")
+	if kind != "":
+		hud.show_banner("Spaceport ship lost", Color(1, 0.6, 0.4))
+		GameManager.spaceport_fleet.erase(kind)
+	else:
+		hud.show_banner("Escort lost", Color(1, 0.6, 0.4))
+		GameManager.fleet_size = maxi(0, GameManager.fleet_size - 1)
 	var active := active_ship()
 	ships.erase(ship)
 	ship.queue_free()

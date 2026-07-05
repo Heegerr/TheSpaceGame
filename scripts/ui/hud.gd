@@ -49,6 +49,8 @@ const RESOURCE_LABELS: Dictionary[String, String] = {
 @onready var tech_tree_box: VBoxContainer = $TechTree/TechTreeBox
 @onready var barracks_panel: PanelContainer = $Barracks
 @onready var barracks_box: VBoxContainer = $Barracks/BarracksBox
+@onready var spaceport_panel: PanelContainer = $Spaceport
+@onready var spaceport_box: VBoxContainer = $Spaceport/SpaceportBox
 
 var _count_labels: Dictionary[String, Label] = {}
 var _build_rows: Array[Dictionary] = []
@@ -74,6 +76,10 @@ var _barracks_rows: Array[Dictionary] = []
 var _barracks_built := false
 var _barracks_queue_label: Label
 var _current_barracks: Node
+var _spaceport_rows: Array[Dictionary] = []
+var _spaceport_built := false
+var _spaceport_queue_label: Label
+var _current_spaceport: Node
 
 
 ## Always-visible resources; biome-exclusive ones (Milestone 11) only get a
@@ -150,6 +156,8 @@ func _process(_delta: float) -> void:
 		_refresh_tech_tree()
 	if barracks_panel.visible:
 		_refresh_barracks_menu()
+	if spaceport_panel.visible:
+		_refresh_spaceport_menu()
 
 
 ## Wave countdown readout. Pass negative seconds to hide (no colonies yet).
@@ -354,6 +362,8 @@ func _update_count(resource_id: String, amount: int) -> void:
 		_refresh_tech_tree()
 	if barracks_panel.visible:
 		_refresh_barracks_menu()
+	if spaceport_panel.visible:
+		_refresh_spaceport_menu()
 
 
 # -- Ship menu (upgrades + fleet), opened by boarding the landed ship ---------------
@@ -652,6 +662,84 @@ func _on_command_units(mode: int) -> void:
 		if is_instance_valid(unit):
 			unit.set("mode", mode)
 	_refresh_barracks_menu()
+
+
+# -- Spaceport (space unit training), opened by interacting with it -----------------
+# Trained ships join the same player_fleet roster as ordinary escorts (see space.gd),
+# so they already follow/defend/engage exactly like Milestone 3 escorts - no extra
+# command UI needed here beyond training.
+
+func show_spaceport_menu(spaceport: Node) -> void:
+	_current_spaceport = spaceport
+	if not _spaceport_built:
+		_build_spaceport_menu()
+	_refresh_spaceport_menu()
+	spaceport_panel.visible = true
+
+
+func hide_spaceport_menu() -> void:
+	spaceport_panel.visible = false
+
+
+func _build_spaceport_menu() -> void:
+	_spaceport_built = true
+	spaceport_box.add_theme_constant_override("separation", 4)
+	var title := Label.new()
+	title.text = "SPACEPORT"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 12)
+	spaceport_box.add_child(title)
+	_spaceport_queue_label = Label.new()
+	_spaceport_queue_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_spaceport_queue_label.add_theme_font_size_override("font_size", 9)
+	spaceport_box.add_child(_spaceport_queue_label)
+	for id in SpaceportShips.DEFS:
+		var def: Dictionary = SpaceportShips.DEFS[id]
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		var name_label := Label.new()
+		name_label.add_theme_font_size_override("font_size", 8)
+		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		name_label.text = "%s - %s" % [def["name"], def["desc"]]
+		var cost_label := Label.new()
+		cost_label.add_theme_font_size_override("font_size", 8)
+		var train_button := Button.new()
+		train_button.text = "Build"
+		train_button.add_theme_font_size_override("font_size", 8)
+		train_button.pressed.connect(_on_train_ship.bind(id))
+		row.add_child(name_label)
+		row.add_child(cost_label)
+		row.add_child(train_button)
+		spaceport_box.add_child(row)
+		_spaceport_rows.append({"id": id, "cost": cost_label, "button": train_button})
+	var close := Button.new()
+	close.text = "Close"
+	close.add_theme_font_size_override("font_size", 10)
+	close.pressed.connect(hide_spaceport_menu)
+	spaceport_box.add_child(close)
+
+
+func _refresh_spaceport_menu() -> void:
+	if not _spaceport_built:
+		return
+	var queue_length := 0
+	if _current_spaceport != null and is_instance_valid(_current_spaceport):
+		queue_length = _current_spaceport.train_queue_length()
+	_spaceport_queue_label.text = "Fleet ships: %d  -  Build queue: %d" % [
+			GameManager.spaceport_fleet.size(), queue_length]
+	for row in _spaceport_rows:
+		var id: String = row["id"]
+		var cost: Dictionary = SpaceportShips.cost_of(id)
+		row["cost"].text = _cost_text(cost)
+		var can_afford := SpaceportShips.can_afford(id)
+		row["cost"].add_theme_color_override("font_color", Color(0.6, 1, 0.6) if can_afford else Color(1, 0.45, 0.4))
+		row["button"].disabled = not can_afford
+
+
+func _on_train_ship(id: String) -> void:
+	if _current_spaceport != null and is_instance_valid(_current_spaceport):
+		_current_spaceport.queue_train(id)
+	_refresh_spaceport_menu()
 
 
 func _on_planet_changed(planet_name: String) -> void:
