@@ -83,7 +83,18 @@ Notes:
   follow/defend/engage AI and ship-switching already apply with no new command UI. Also fixes a
   group-name mismatch from Milestone 12: minimap now reads the pre-existing "hostile_ships" group
   (enemy_ship.tscn) instead of a redundant "hostile_ship" this project added.
-- [ ] Milestone 18 - Enterable ship interior on planet
+- [x] Milestone 18 - Enterable ship interior on planet: boarding the landed ship now enters
+  scenes/planet/ship_interior.tscn (a small fixed room built from player_on_foot.tscn reused
+  wholesale) instead of opening the ship menu directly; an Upgrade Terminal opens the same ship
+  menu (upgrades/Shipyard/Launch), and an exit hatch returns to the surface via the planet's
+  current data (works for story planets too, not just the procedural surface).
+
+All ten milestones of the third build wave (9-18) are complete. None of it has been run through
+the Godot editor (still unavailable in this environment) - first action next session should be
+the same as after the second wave: open the editor, fix whatever it reports, commit .uid
+artifacts, then playtest each milestone (multi-planet systems + system types + new biomes in
+space; the minimap in both modes; a Tower/Wall/Gate/Research/Storage/Barracks/Spaceport colony;
+boarding the ship to reach the new interior).
 
 Requested 2026-07-05: a third build wave extending the second wave's colony/combat systems -
 multi-planet star systems with typed system modifiers (M9-10), expanded biome variety tied to

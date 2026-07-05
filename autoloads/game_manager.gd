@@ -15,6 +15,7 @@ const SLOT_COUNT := 3
 const MAIN_MENU_SCENE := "res://scenes/ui/main_menu.tscn"
 const SPACE_SCENE := "res://scenes/space/space.tscn"
 const SURFACE_SCENE := "res://scenes/planet/planet_surface.tscn"
+const SHIP_INTERIOR_SCENE := "res://scenes/planet/ship_interior.tscn"
 
 const StructureScript := preload("res://scripts/colony/structure.gd")
 
@@ -74,6 +75,19 @@ func land_on_planet(planet_data: PlanetData, ship: Node2D) -> void:
 	planet_changed.emit(current_planet)
 	save_current()
 	var scene := SURFACE_SCENE if planet_data.surface_scene == "" else planet_data.surface_scene
+	get_tree().change_scene_to_file.call_deferred(scene)
+
+
+## Milestone 18: board the landed ship from the surface without leaving the
+## planet. current_planet/current_planet_data are untouched, so exiting just
+## re-lands on the same planet (regenerating its surface, same as any other
+## land/return).
+func enter_ship_interior() -> void:
+	get_tree().change_scene_to_file.call_deferred(SHIP_INTERIOR_SCENE)
+
+
+func exit_ship_interior() -> void:
+	var scene := SURFACE_SCENE if current_planet_data == null or current_planet_data.surface_scene == "" else current_planet_data.surface_scene
 	get_tree().change_scene_to_file.call_deferred(scene)
 
 

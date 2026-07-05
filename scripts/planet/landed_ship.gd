@@ -1,7 +1,8 @@
 extends Area2D
-## The player's ship parked on the landing pad. Boarding it opens the ship
-## menu (upgrades, fleet, launch). Gathered resources persist because they
-## live on the Inventory autoload.
+## The player's ship parked on the landing pad. Boarding it enters the ship
+## interior (Milestone 18), which has its own Upgrade Terminal for the ship
+## menu (upgrades, fleet, launch) and an exit hatch back to the surface.
+## Gathered resources persist because they live on the Inventory autoload.
 
 
 func get_prompt() -> String:
@@ -9,11 +10,7 @@ func get_prompt() -> String:
 
 
 func interact() -> void:
-	var hud := get_tree().get_first_node_in_group("hud")
-	if hud != null:
-		hud.show_ship_menu()
-	else:
-		GameManager.return_to_space()
+	GameManager.enter_ship_interior()
 
 
 func _draw() -> void:
