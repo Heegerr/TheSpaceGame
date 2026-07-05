@@ -1,63 +1,83 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://brvtea2xcj0q2"]
 
-[ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_menu"]
+[ext_resource type="Script" uid="uid://d33qbroscs7km" path="res://scripts/ui/main_menu.gd" id="1_menu"]
 
-[node name="MainMenu" type="Control"]
+[node name="MainMenu" type="Control" unique_id=1750319939]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1_menu")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=157809766]
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 color = Color(0.02, 0.03, 0.07, 1)
 
-[node name="Center" type="CenterContainer" parent="."]
+[node name="Center" type="CenterContainer" parent="." unique_id=1866213044]
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 
-[node name="MainButtons" type="VBoxContainer" parent="Center"]
+[node name="MainButtons" type="VBoxContainer" parent="Center" unique_id=313350257]
+layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="Title" type="Label" parent="Center/MainButtons"]
+[node name="Title" type="Label" parent="Center/MainButtons" unique_id=287663445]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
 text = "THE SPACE GAME"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 26
 
-[node name="Subtitle" type="Label" parent="Center/MainButtons"]
+[node name="Subtitle" type="Label" parent="Center/MainButtons" unique_id=1005898604]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.68, 0.8, 1)
+theme_override_font_sizes/font_size = 8
 text = "explore - colonize - survive"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 8
-theme_override_colors/font_color = Color(0.6, 0.68, 0.8, 1)
 
-[node name="Spacer" type="Control" parent="Center/MainButtons"]
+[node name="Spacer" type="Control" parent="Center/MainButtons" unique_id=75528164]
 custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
 
-[node name="ContinueButton" type="Button" parent="Center/MainButtons"]
+[node name="ContinueButton" type="Button" parent="Center/MainButtons" unique_id=331368795]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
 text = "Continue"
-theme_override_font_sizes/font_size = 10
 
-[node name="NewButton" type="Button" parent="Center/MainButtons"]
+[node name="NewButton" type="Button" parent="Center/MainButtons" unique_id=2056854990]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
 text = "New Game"
-theme_override_font_sizes/font_size = 10
 
-[node name="LoadButton" type="Button" parent="Center/MainButtons"]
+[node name="LoadButton" type="Button" parent="Center/MainButtons" unique_id=1016923250]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
 text = "Load Game"
-theme_override_font_sizes/font_size = 10
 
-[node name="QuitButton" type="Button" parent="Center/MainButtons"]
+[node name="OptionsButton" type="Button" parent="Center/MainButtons"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "Options"
+
+[node name="QuitButton" type="Button" parent="Center/MainButtons" unique_id=969670182]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
 text = "Quit"
-theme_override_font_sizes/font_size = 10
 
-[node name="SlotPanel" type="VBoxContainer" parent="Center"]
+[node name="SlotPanel" type="VBoxContainer" parent="Center" unique_id=588591546]
 visible = false
+layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="SlotTitle" type="Label" parent="Center/SlotPanel"]
+[node name="SlotTitle" type="Label" parent="Center/SlotPanel" unique_id=2093518294]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
 text = "Choose a slot"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 12
 
-[node name="BackButton" type="Button" parent="Center/SlotPanel"]
-text = "Back"
+[node name="BackButton" type="Button" parent="Center/SlotPanel" unique_id=1924189770]
+layout_mode = 2
 theme_override_font_sizes/font_size = 10
+text = "Back"

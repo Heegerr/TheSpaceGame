@@ -2,6 +2,8 @@ extends Control
 ## Main menu: New Game / Continue / Load Game across 3 save slots.
 ## Continue loads the most recently saved slot.
 
+const OptionsMenuScene := preload("res://scenes/ui/options_menu.tscn")
+
 @onready var main_buttons: VBoxContainer = $Center/MainButtons
 @onready var continue_button: Button = $Center/MainButtons/ContinueButton
 @onready var slot_panel: VBoxContainer = $Center/SlotPanel
@@ -9,6 +11,7 @@ extends Control
 
 var _slot_buttons: Array[Button] = []
 var _mode := "new"
+var _options_menu: CanvasLayer
 
 
 func _ready() -> void:
@@ -17,6 +20,7 @@ func _ready() -> void:
 	continue_button.pressed.connect(func() -> void: GameManager.continue_game())
 	$Center/MainButtons/NewButton.pressed.connect(_open_slots.bind("new"))
 	$Center/MainButtons/LoadButton.pressed.connect(_open_slots.bind("load"))
+	$Center/MainButtons/OptionsButton.pressed.connect(_open_options)
 	$Center/MainButtons/QuitButton.pressed.connect(func() -> void: get_tree().quit())
 	$Center/SlotPanel/BackButton.pressed.connect(_close_slots)
 	for slot in GameManager.SLOT_COUNT:
@@ -55,3 +59,10 @@ func _on_slot_pressed(slot: int) -> void:
 		GameManager.new_game(slot)
 	else:
 		GameManager.load_slot(slot)
+
+
+func _open_options() -> void:
+	if _options_menu == null:
+		_options_menu = OptionsMenuScene.instantiate()
+		add_child(_options_menu)
+	_options_menu.open()

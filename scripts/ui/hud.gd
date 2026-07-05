@@ -5,6 +5,7 @@ extends CanvasLayer
 
 const Structure := preload("res://scripts/colony/structure.gd")
 const ShipyardScene := preload("res://scenes/ui/shipyard.tscn")
+const OptionsMenuScene := preload("res://scenes/ui/options_menu.tscn")
 
 const RESOURCE_COLORS: Dictionary[String, Color] = {
 	"ore": Color(0.44, 0.89, 0.91),
@@ -69,6 +70,7 @@ var _banner: Label
 var _banner_tween: Tween
 var _threat_label: Label
 var _shipyard: CanvasLayer
+var _options_menu: CanvasLayer
 var _tech_rows: Array[Dictionary] = []
 var _tech_tree_built := false
 var _research_label: Label
@@ -111,6 +113,7 @@ func _ready() -> void:
 	pause_menu.visible = false
 	$PauseMenu/Center/VBox/ResumeButton.pressed.connect(toggle_pause)
 	$PauseMenu/Center/VBox/SaveButton.pressed.connect(_on_save_pressed)
+	$PauseMenu/Center/VBox/OptionsButton.pressed.connect(_open_options)
 	$PauseMenu/Center/VBox/MenuButton.pressed.connect(GameManager.quit_to_menu)
 
 
@@ -476,6 +479,13 @@ func _on_open_shipyard() -> void:
 		add_child(_shipyard)
 	hide_ship_menu()
 	_shipyard.open()
+
+
+func _open_options() -> void:
+	if _options_menu == null:
+		_options_menu = OptionsMenuScene.instantiate()
+		add_child(_options_menu)
+	_options_menu.open()
 
 
 func _on_launch() -> void:

@@ -1,0 +1,77 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/options_menu.gd" id="1_options"]
+
+[node name="OptionsMenu" type="CanvasLayer"]
+script = ExtResource("1_options")
+
+[node name="Dim" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.6)
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -150.0
+offset_right = 180.0
+offset_bottom = 150.0
+
+[node name="Box" type="VBoxContainer" parent="Panel"]
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="Panel/Box"]
+text = "OPTIONS"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 12
+
+[node name="VolumeRow" type="HBoxContainer" parent="Panel/Box"]
+theme_override_constants/separation = 8
+
+[node name="VolumeText" type="Label" parent="Panel/Box/VolumeRow"]
+text = "Master Volume"
+theme_override_font_sizes/font_size = 9
+size_flags_horizontal = 3
+
+[node name="VolumeSlider" type="HSlider" parent="Panel/Box/VolumeRow"]
+custom_minimum_size = Vector2(120, 0)
+
+[node name="VolumeLabel" type="Label" parent="Panel/Box/VolumeRow"]
+text = "100%"
+theme_override_font_sizes/font_size = 9
+custom_minimum_size = Vector2(36, 0)
+
+[node name="KeybindsTitle" type="Label" parent="Panel/Box"]
+text = "Keybinds"
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.75, 0.78, 0.85, 1)
+
+[node name="Scroll" type="ScrollContainer" parent="Panel/Box"]
+custom_minimum_size = Vector2(0, 150)
+horizontal_scroll_mode = 0
+
+[node name="KeybindList" type="VBoxContainer" parent="Panel/Box/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 3
+
+[node name="RebindHint" type="Label" parent="Panel/Box"]
+theme_override_font_sizes/font_size = 8
+theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Buttons" type="HBoxContainer" parent="Panel/Box"]
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="ResetButton" type="Button" parent="Panel/Box/Buttons"]
+text = "Reset Keybinds"
+theme_override_font_sizes/font_size = 9
+
+[node name="CloseButton" type="Button" parent="Panel/Box/Buttons"]
+text = "Close"
+theme_override_font_sizes/font_size = 10

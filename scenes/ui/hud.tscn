@@ -146,6 +146,10 @@ theme_override_font_sizes/font_size = 10
 text = "Save Game"
 theme_override_font_sizes/font_size = 10
 
+[node name="OptionsButton" type="Button" parent="PauseMenu/Center/VBox"]
+text = "Options"
+theme_override_font_sizes/font_size = 10
+
 [node name="MenuButton" type="Button" parent="PauseMenu/Center/VBox"]
 text = "Save and Quit to Menu"
 theme_override_font_sizes/font_size = 10
