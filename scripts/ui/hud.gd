@@ -44,6 +44,8 @@ const RESOURCE_LABELS: Dictionary[String, String] = {
 @onready var pause_status: Label = $PauseMenu/Center/VBox/StatusLabel
 @onready var ship_menu: PanelContainer = $ShipMenu
 @onready var ship_menu_box: VBoxContainer = $ShipMenu/ShipMenuBox
+@onready var tech_tree_panel: PanelContainer = $TechTree
+@onready var tech_tree_box: VBoxContainer = $TechTree/TechTreeBox
 
 var _count_labels: Dictionary[String, Label] = {}
 var _build_rows: Array[Dictionary] = []
@@ -62,6 +64,9 @@ var _banner: Label
 var _banner_tween: Tween
 var _threat_label: Label
 var _shipyard: CanvasLayer
+var _tech_rows: Array[Dictionary] = []
+var _tech_tree_built := false
+var _research_label: Label
 
 
 ## Always-visible resources; biome-exclusive ones (Milestone 11) only get a
@@ -130,10 +135,12 @@ func _process(_delta: float) -> void:
 	if _ship_bars.visible and _space_ship != null and is_instance_valid(_space_ship):
 		_hull_bar.max_value = _space_ship.max_hull
 		_hull_bar.value = _space_ship.hull
-		_shield_bar.max_value = _space_ship.BASE_SHIELD
+		_shield_bar.max_value = _space_ship.max_shield
 		_shield_bar.value = _space_ship.shield
 		_energy_bar.max_value = _space_ship.MAX_ENERGY
 		_energy_bar.value = _space_ship.energy
+	if tech_tree_panel.visible:
+		_refresh_tech_tree()
 
 
 ## Wave countdown readout. Pass negative seconds to hide (no colonies yet).
@@ -325,6 +332,8 @@ func _update_count(resource_id: String, amount: int) -> void:
 		_refresh_build_menu()
 	if ship_menu.visible:
 		_refresh_ship_menu()
+	if tech_tree_panel.visible:
+		_refresh_tech_tree()
 
 
 # -- Ship menu (upgrades + fleet), opened by boarding the landed ship ---------------
@@ -442,6 +451,90 @@ func _on_open_shipyard() -> void:
 func _on_launch() -> void:
 	hide_ship_menu()
 	GameManager.return_to_space()
+
+
+# -- Tech tree (Research Building), opened by interacting with it -------------------
+
+func show_tech_tree() -> void:
+	if not _tech_tree_built:
+		_build_tech_tree()
+	_refresh_tech_tree()
+	tech_tree_panel.visible = true
+
+
+func hide_tech_tree() -> void:
+	tech_tree_panel.visible = false
+
+
+func _current_star_type() -> int:
+	var data := GameManager.current_planet_data
+	return data.star_type if data != null else -1
+
+
+func _build_tech_tree() -> void:
+	_tech_tree_built = true
+	tech_tree_box.add_theme_constant_override("separation", 4)
+	var title := Label.new()
+	title.text = "TECH TREE"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 12)
+	tech_tree_box.add_child(title)
+	_research_label = Label.new()
+	_research_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_research_label.add_theme_font_size_override("font_size", 9)
+	tech_tree_box.add_child(_research_label)
+	for id in TechTree.all_ids():
+		var def := TechTree.def_of(id)
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		var name_label := Label.new()
+		name_label.add_theme_font_size_override("font_size", 8)
+		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var cost_label := Label.new()
+		cost_label.add_theme_font_size_override("font_size", 8)
+		var unlock_button := Button.new()
+		unlock_button.text = "Unlock"
+		unlock_button.add_theme_font_size_override("font_size", 8)
+		unlock_button.pressed.connect(_on_unlock_tech.bind(id))
+		row.add_child(name_label)
+		row.add_child(cost_label)
+		row.add_child(unlock_button)
+		tech_tree_box.add_child(row)
+		_tech_rows.append({"id": id, "def": def, "name": name_label, "cost": cost_label, "button": unlock_button})
+	var close := Button.new()
+	close.text = "Close"
+	close.add_theme_font_size_override("font_size", 10)
+	close.pressed.connect(hide_tech_tree)
+	tech_tree_box.add_child(close)
+
+
+func _refresh_tech_tree() -> void:
+	if not _tech_tree_built:
+		return
+	_research_label.text = "Research Points: %d" % int(GameManager.research.get("points", 0.0))
+	var star_type := _current_star_type()
+	for row in _tech_rows:
+		var id: String = row["id"]
+		var def: Dictionary = row["def"]
+		var special := TechTree.is_special(id)
+		var locked_out := special and int(def["requires_star_type"]) != star_type and not TechTree.is_unlocked(id)
+		var label_text := "%s - %s" % [def["name"], def["desc"]]
+		if locked_out:
+			label_text += " (needs %s system)" % StarSystemTypes.display_name(int(def["requires_star_type"]))
+		row["name"].text = label_text
+		if TechTree.is_unlocked(id):
+			row["cost"].text = "UNLOCKED"
+			row["button"].disabled = true
+		else:
+			row["cost"].text = TechTree.cost_text(def["cost"])
+			var can_unlock := TechTree.can_unlock(id, star_type)
+			row["button"].disabled = not can_unlock
+			row["cost"].add_theme_color_override("font_color", Color(0.6, 1, 0.6) if can_unlock else Color(1, 0.45, 0.4))
+
+
+func _on_unlock_tech(id: String) -> void:
+	TechTree.unlock(id, _current_star_type())
+	_refresh_tech_tree()
 
 
 func _on_planet_changed(planet_name: String) -> void:

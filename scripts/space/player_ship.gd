@@ -37,6 +37,7 @@ var combat_slowdown := false
 
 var max_hull := BASE_HULL
 var hull := BASE_HULL
+var max_shield := BASE_SHIELD
 var shield := BASE_SHIELD
 var energy := MAX_ENERGY
 
@@ -52,9 +53,12 @@ func _ready() -> void:
 
 func reset_combat_state() -> void:
 	var design := ShipParts.design_bonus() if is_flagship else {}
-	max_hull = BASE_HULL + ShipUpgrades.hull_bonus() + float(design.get("hull", 0))
+	var tech_hull := TechTree.flagship_hull_bonus() if is_flagship else 0.0
+	var tech_shield := TechTree.flagship_shield_bonus() if is_flagship else 0.0
+	max_hull = BASE_HULL + ShipUpgrades.hull_bonus() + float(design.get("hull", 0)) + tech_hull
 	hull = max_hull
-	shield = BASE_SHIELD
+	max_shield = BASE_SHIELD + tech_shield
+	shield = max_shield
 	energy = MAX_ENERGY
 
 
@@ -64,11 +68,11 @@ func _physics_process(delta: float) -> void:
 	if _shield_delay > 0.0:
 		_shield_delay = maxf(0.0, _shield_delay - delta)
 	else:
-		shield = minf(BASE_SHIELD, shield + SHIELD_REGEN * delta)
+		shield = minf(max_shield, shield + SHIELD_REGEN * delta)
 
 	var speed_scale := COMBAT_SPEED_SCALE if combat_slowdown else 1.0
 	var design_speed := float(ShipParts.design_bonus().get("speed", 0.0)) if is_flagship else 0.0
-	var speed_mult := ShipUpgrades.speed_multiplier() + design_speed
+	var speed_mult := ShipUpgrades.speed_multiplier() + design_speed + TechTree.engine_speed_bonus()
 	var max_speed := BASE_MAX_SPEED * speed_mult * speed_scale
 	var acceleration := BASE_ACCELERATION * speed_mult * speed_scale
 	var thrust := Vector2.ZERO

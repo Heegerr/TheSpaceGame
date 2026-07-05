@@ -63,6 +63,12 @@ var base_color: Color
 var accent_color: Color
 var atmosphere_color: Color
 
+## StarSystemTypes.Type of the system this planet orbits, or -1 if generated
+## outside PlanetField (e.g. running planet_surface.tscn directly from the
+## editor). Set by PlanetField right after PlanetData.make(). Milestone 14
+## uses it to gate system-locked Research Building tech tree upgrades.
+var star_type := -1
+
 ## Set for hand-authored story planets (see StoryRegistry): landing loads
 ## surface_scene instead of the procedural surface.
 var story_id := ""

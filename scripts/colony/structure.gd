@@ -9,7 +9,7 @@ extends StaticBody2D
 ## respects it with no pathfinding changes needed), and Gate (a togglable
 ## wall the player can open/close via a child interact hotspot).
 
-enum Type { HABITAT, MINER, REFINERY, SILO, TOWER, WALL, GATE }
+enum Type { HABITAT, MINER, REFINERY, SILO, TOWER, WALL, GATE, RESEARCH }
 
 const DEFS: Dictionary[int, Dictionary] = {
 	Type.HABITAT: {
@@ -47,6 +47,11 @@ const DEFS: Dictionary[int, Dictionary] = {
 		"desc": "Togglable wall - E to open/close",
 		"cost": {"ore": 5, "scrap": 2},
 	},
+	Type.RESEARCH: {
+		"name": "Research Building",
+		"desc": "Generates research points - E for tech tree",
+		"cost": {"ore": 12, "alloy": 3, "scrap": 6},
+	},
 }
 
 const MINER_INTERVAL := 10.0
@@ -54,6 +59,8 @@ const REFINERY_INTERVAL := 12.0
 const TOWER_INTERVAL := 1.1
 const TOWER_RANGE := 170.0
 const TOWER_DAMAGE := 2
+const RESEARCH_INTERVAL := 8.0
+const RESEARCH_YIELD := 1.0
 
 const PROJECTILE_SCENE := preload("res://scenes/planet/projectile.tscn")
 
@@ -95,25 +102,33 @@ func setup(structure_type: int) -> void:
 	match type:
 		Type.MINER:
 			production_timer.timeout.connect(_on_production)
-			production_timer.start(MINER_INTERVAL)
+			production_timer.start(MINER_INTERVAL * TechTree.miner_interval_multiplier())
 		Type.REFINERY:
 			production_timer.timeout.connect(_on_production)
 			production_timer.start(REFINERY_INTERVAL)
 		Type.TOWER:
 			production_timer.timeout.connect(_on_production)
 			production_timer.start(TOWER_INTERVAL)
+		Type.RESEARCH:
+			production_timer.timeout.connect(_on_production)
+			production_timer.start(RESEARCH_INTERVAL)
+			_add_interact_area(ResearchInteract.new())
 		Type.GATE:
-			var area := GateInteract.new()
-			area.gate = self
-			area.collision_layer = 8
-			area.collision_mask = 0
-			area.monitoring = false
-			var shape := CollisionShape2D.new()
-			var circle := CircleShape2D.new()
-			circle.radius = 16.0
-			shape.shape = circle
-			area.add_child(shape)
-			add_child(area)
+			var gate_area := GateInteract.new()
+			gate_area.gate = self
+			_add_interact_area(gate_area)
+
+
+func _add_interact_area(area: Area2D) -> void:
+	area.collision_layer = 8
+	area.collision_mask = 0
+	area.monitoring = false
+	var shape := CollisionShape2D.new()
+	var circle := CircleShape2D.new()
+	circle.radius = 16.0
+	shape.shape = circle
+	area.add_child(shape)
+	add_child(area)
 
 
 func toggle_gate() -> void:
@@ -134,6 +149,9 @@ func _on_production() -> void:
 				FloatingText.spawn(get_parent(), global_position + Vector2(0, -18), "+1 Alloy", Color(0.85, 0.55, 0.95))
 		Type.TOWER:
 			_fire_at_nearest_enemy()
+		Type.RESEARCH:
+			GameManager.research["points"] = float(GameManager.research.get("points", 0.0)) + RESEARCH_YIELD
+			FloatingText.spawn(get_parent(), global_position + Vector2(0, -18), "+1 RP", Color(0.6, 0.85, 1.0))
 
 
 func _fire_at_nearest_enemy() -> void:
@@ -151,7 +169,7 @@ func _fire_at_nearest_enemy() -> void:
 	var direction := (nearest.global_position - global_position).normalized()
 	var bolt := PROJECTILE_SCENE.instantiate()
 	bolt.direction = direction
-	bolt.damage = TOWER_DAMAGE
+	bolt.damage = TOWER_DAMAGE + TechTree.tower_damage_bonus()
 	bolt.position = global_position + direction * 14.0
 	get_parent().add_child(bolt)
 
@@ -198,3 +216,9 @@ func _draw() -> void:
 				draw_rect(Rect2(-10, -8, 20, 16), gate_color)
 			else:
 				draw_rect(Rect2(-10, -8, 20, 16), gate_color, false, 1.5)
+		Type.RESEARCH:
+			draw_rect(Rect2(-11, -2, 22, 14), Color(0.4, 0.44, 0.55))
+			draw_circle(Vector2(0, -8), 9.0, Color(0.5, 0.6, 0.78))
+			draw_arc(Vector2(0, -8), 9.0, PI, TAU, 16, Color(0.6, 0.85, 1.0), 1.5)
+			draw_line(Vector2(0, -17), Vector2(0, -24), Color(0.6, 0.85, 1.0), 1.5)
+			draw_circle(Vector2(0, -24), 2.0, Color(0.7, 0.95, 1.0))

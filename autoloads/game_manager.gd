@@ -51,6 +51,10 @@ var ship_designs: Array = []
 ## Index into ship_designs applied to the flagship, or -1 for none.
 var active_design_index := -1
 
+## Research Building tech tree (Milestone 14): passive research points and
+## the set of permanently-unlocked upgrade ids (TechTree.GENERAL/SPECIAL).
+var research: Dictionary = {"points": 0.0, "unlocked": {}}
+
 ## Campaign progress: wave escalation stage, boss completion, infinite mode.
 var campaign: Dictionary = {"stage": 0, "completed": false, "infinite": false, "waves_survived": 0, "next_wave_in": 90.0}
 
@@ -141,6 +145,7 @@ func recompute_capacity() -> void:
 	var bonus := count_structures(StructureScript.Type.SILO) * 25
 	bonus += int(ship_upgrades.get("cargo", 0)) * 25
 	bonus += int(ShipParts.design_bonus().get("cargo", 0))
+	bonus += TechTree.cargo_bonus()
 	Inventory.set_cap_bonus(bonus)
 
 
@@ -157,6 +162,7 @@ func new_game(slot: int) -> void:
 	fleet_size = 0
 	ship_designs = []
 	active_design_index = -1
+	research = {"points": 0.0, "unlocked": {}}
 	campaign = {"stage": 0, "completed": false, "infinite": false, "waves_survived": 0, "next_wave_in": 90.0}
 	Inventory.apply_save_data({})
 	Inventory.set_cap_bonus(0)
@@ -260,6 +266,7 @@ func _collect_save_data() -> Dictionary:
 		"fleet_size": fleet_size,
 		"ship_designs": ship_designs.duplicate(true),
 		"active_design_index": active_design_index,
+		"research": research.duplicate(true),
 		"campaign": campaign.duplicate(),
 		"ship": ship_data,
 		"meta": {
@@ -299,6 +306,15 @@ func _apply_save_data(data: Dictionary) -> void:
 			if design is Dictionary:
 				ship_designs.append(design)
 	active_design_index = int(data.get("active_design_index", -1))
+
+	research = {"points": 0.0, "unlocked": {}}
+	var saved_research: Variant = data.get("research", {})
+	if saved_research is Dictionary:
+		research["points"] = float(saved_research.get("points", 0.0))
+		var saved_unlocked: Variant = saved_research.get("unlocked", {})
+		if saved_unlocked is Dictionary:
+			for key in saved_unlocked:
+				research["unlocked"][str(key)] = bool(saved_unlocked[key])
 
 	var saved_campaign: Variant = data.get("campaign", {})
 	if saved_campaign is Dictionary:

@@ -59,7 +59,11 @@ Notes:
   range; Wall/Gate ride the existing "every structure blocks layer 1" physics (enemies already
   collide with it, no pathfinding change needed); Gate toggles its own collision via a child
   GateInteract Area2D (E to open/close).
-- [ ] Milestone 14 - Research building & tech tree
+- [x] Milestone 14 - Research building & tech tree: Research Building generates research points
+  (production-timer pattern) and opens the HUD tech tree panel via a ResearchInteract Area2D;
+  TechTree (scripts/colony/tech_tree.gd) holds general upgrades (miners/towers/cargo/engines) plus
+  star-type-gated special upgrades (Nebula Shielding, Cryo Hardening), reading PlanetData.star_type
+  (now stamped by PlanetField); unlocks persist forever in GameManager.research.unlocked.
 - [ ] Milestone 15 - Storage building
 - [ ] Milestone 16 - Barracks (train ground units)
 - [ ] Milestone 17 - Spaceport (train space units)

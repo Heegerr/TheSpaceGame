@@ -82,6 +82,7 @@ func generate(galaxy_seed: int) -> void:
 			planet.position = planet_pos
 			add_child(planet)
 			var planet_data := PlanetData.make(seeds[i], StarSystemTypes.biome_weights(system_data.star_type))
+			planet_data.star_type = system_data.star_type
 			var story := StoryRegistry.story_for_index(flat_i)
 			if not story.is_empty():
 				planet_data.display_name = str(story["name"])
