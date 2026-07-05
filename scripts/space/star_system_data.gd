@@ -12,6 +12,8 @@ var system_index: int
 var system_seed: int
 var position: Vector2
 var display_name: String
+## Milestone 10: StarSystemTypes.Type, deterministic from system_seed.
+var star_type: int
 ## Seeds of the planets orbiting this star, in orbit order (innermost first).
 var planet_seeds: Array[int] = []
 
@@ -22,6 +24,7 @@ static func make(galaxy_seed: int, index: int, system_position: Vector2, seeds: 
 	data.system_seed = hash("galaxy-system:%d:%d" % [galaxy_seed, index])
 	data.position = system_position
 	data.planet_seeds = seeds
+	data.star_type = StarSystemTypes.type_for_seed(data.system_seed)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = data.system_seed
 	data.display_name = "%s System" % NAME_SYLLABLES[rng.randi_range(0, NAME_SYLLABLES.size() - 1)]

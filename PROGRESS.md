@@ -42,7 +42,9 @@ Notes:
 - [x] Milestone 9 - Multiple planets per star system: `StarSystemData` + `Star` (visual only);
   `PlanetField` scatters 8 star systems far apart with 2-6 orbiting planets each in tight orbits;
   flat `planets` array preserved so encounter/wave/story code needed no changes.
-- [ ] Milestone 10 - Star system types (visual + generation modifier per type)
+- [x] Milestone 10 - Star system types: `StarSystemTypes` (6 types) drives Star visuals
+  (color/size/nebula tint/binary companion/pulse) and a biome_weights table consumed by
+  `PlanetData.make()`; star_type is derived from system_seed, so no save field is needed.
 - [ ] Milestone 11 - Biome variety tied to star system type
 - [ ] Milestone 12 - Minimap (space and ground)
 - [ ] Milestone 13 - Defense structures (towers, walls, gates)

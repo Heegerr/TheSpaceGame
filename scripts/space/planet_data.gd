@@ -25,12 +25,15 @@ var story_id := ""
 var surface_scene := ""
 
 
-static func make(p_seed: int) -> PlanetData:
+## biome_weights (Milestone 10) optionally skews biome choice per star system
+## type, e.g. {Biome.ICE: 2.0} makes ice planets twice as likely; an empty
+## dictionary means an even spread across all biomes.
+static func make(p_seed: int, biome_weights: Dictionary = {}) -> PlanetData:
 	var data := PlanetData.new()
 	data.planet_seed = p_seed
 	var rng := RandomNumberGenerator.new()
 	rng.seed = p_seed
-	data.biome = rng.randi_range(0, BIOME_COUNT - 1)
+	data.biome = _pick_biome(rng, biome_weights)
 	data.radius = rng.randf_range(34.0, 72.0)
 	var syllables := ""
 	for i in rng.randi_range(2, 3):
@@ -51,6 +54,21 @@ static func make(p_seed: int) -> PlanetData:
 			data.accent_color = Color(0.5, 0.72, 0.85)
 			data.atmosphere_color = Color(0.87, 0.97, 1.0, 0.3)
 	return data
+
+
+static func _pick_biome(rng: RandomNumberGenerator, biome_weights: Dictionary) -> int:
+	if biome_weights.is_empty():
+		return rng.randi_range(0, BIOME_COUNT - 1)
+	var total := 0.0
+	for biome in range(BIOME_COUNT):
+		total += float(biome_weights.get(biome, 1.0))
+	var roll := rng.randf_range(0.0, total)
+	var accum := 0.0
+	for biome in range(BIOME_COUNT):
+		accum += float(biome_weights.get(biome, 1.0))
+		if roll <= accum:
+			return biome
+	return BIOME_COUNT - 1
 
 
 ## Surface palette for a biome: [low ground, main ground, alt ground, obstacle].
