@@ -47,6 +47,8 @@ const RESOURCE_LABELS: Dictionary[String, String] = {
 @onready var ship_menu_box: VBoxContainer = $ShipMenu/ShipMenuBox
 @onready var tech_tree_panel: PanelContainer = $TechTree
 @onready var tech_tree_box: VBoxContainer = $TechTree/TechTreeBox
+@onready var barracks_panel: PanelContainer = $Barracks
+@onready var barracks_box: VBoxContainer = $Barracks/BarracksBox
 
 var _count_labels: Dictionary[String, Label] = {}
 var _build_rows: Array[Dictionary] = []
@@ -68,6 +70,10 @@ var _shipyard: CanvasLayer
 var _tech_rows: Array[Dictionary] = []
 var _tech_tree_built := false
 var _research_label: Label
+var _barracks_rows: Array[Dictionary] = []
+var _barracks_built := false
+var _barracks_queue_label: Label
+var _current_barracks: Node
 
 
 ## Always-visible resources; biome-exclusive ones (Milestone 11) only get a
@@ -142,6 +148,8 @@ func _process(_delta: float) -> void:
 		_energy_bar.value = _space_ship.energy
 	if tech_tree_panel.visible:
 		_refresh_tech_tree()
+	if barracks_panel.visible:
+		_refresh_barracks_menu()
 
 
 ## Wave countdown readout. Pass negative seconds to hide (no colonies yet).
@@ -344,6 +352,8 @@ func _update_count(resource_id: String, amount: int) -> void:
 		_refresh_ship_menu()
 	if tech_tree_panel.visible:
 		_refresh_tech_tree()
+	if barracks_panel.visible:
+		_refresh_barracks_menu()
 
 
 # -- Ship menu (upgrades + fleet), opened by boarding the landed ship ---------------
@@ -545,6 +555,103 @@ func _refresh_tech_tree() -> void:
 func _on_unlock_tech(id: String) -> void:
 	TechTree.unlock(id, _current_star_type())
 	_refresh_tech_tree()
+
+
+# -- Barracks (unit training + follow/defend command), opened by interacting ---------
+
+func show_barracks_menu(barracks: Node) -> void:
+	_current_barracks = barracks
+	if not _barracks_built:
+		_build_barracks_menu()
+	_refresh_barracks_menu()
+	barracks_panel.visible = true
+
+
+func hide_barracks_menu() -> void:
+	barracks_panel.visible = false
+
+
+func _build_barracks_menu() -> void:
+	_barracks_built = true
+	barracks_box.add_theme_constant_override("separation", 4)
+	var title := Label.new()
+	title.text = "BARRACKS"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 12)
+	barracks_box.add_child(title)
+	_barracks_queue_label = Label.new()
+	_barracks_queue_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_barracks_queue_label.add_theme_font_size_override("font_size", 9)
+	barracks_box.add_child(_barracks_queue_label)
+	for id in GroundUnits.DEFS:
+		var def: Dictionary = GroundUnits.DEFS[id]
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		var name_label := Label.new()
+		name_label.add_theme_font_size_override("font_size", 8)
+		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		name_label.text = "%s - %s" % [def["name"], def["desc"]]
+		var cost_label := Label.new()
+		cost_label.add_theme_font_size_override("font_size", 8)
+		var train_button := Button.new()
+		train_button.text = "Train"
+		train_button.add_theme_font_size_override("font_size", 8)
+		train_button.pressed.connect(_on_train_unit.bind(id))
+		row.add_child(name_label)
+		row.add_child(cost_label)
+		row.add_child(train_button)
+		barracks_box.add_child(row)
+		_barracks_rows.append({"id": id, "cost": cost_label, "button": train_button})
+	var command_row := HBoxContainer.new()
+	command_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	command_row.add_theme_constant_override("separation", 12)
+	var follow_button := Button.new()
+	follow_button.text = "Follow Me"
+	follow_button.add_theme_font_size_override("font_size", 9)
+	follow_button.pressed.connect(_on_command_units.bind(1))
+	var defend_button := Button.new()
+	defend_button.text = "Defend Base"
+	defend_button.add_theme_font_size_override("font_size", 9)
+	defend_button.pressed.connect(_on_command_units.bind(0))
+	command_row.add_child(follow_button)
+	command_row.add_child(defend_button)
+	barracks_box.add_child(command_row)
+	var close := Button.new()
+	close.text = "Close"
+	close.add_theme_font_size_override("font_size", 10)
+	close.pressed.connect(hide_barracks_menu)
+	barracks_box.add_child(close)
+
+
+func _refresh_barracks_menu() -> void:
+	if not _barracks_built:
+		return
+	var queue_length := 0
+	if _current_barracks != null and is_instance_valid(_current_barracks):
+		queue_length = _current_barracks.train_queue_length()
+	_barracks_queue_label.text = "Units: %d  -  Training queue: %d" % [
+			get_tree().get_nodes_in_group("player_units").size(), queue_length]
+	for row in _barracks_rows:
+		var id: String = row["id"]
+		var cost: Dictionary = GroundUnits.cost_of(id)
+		row["cost"].text = _cost_text(cost)
+		var can_afford := GroundUnits.can_afford(id)
+		row["cost"].add_theme_color_override("font_color", Color(0.6, 1, 0.6) if can_afford else Color(1, 0.45, 0.4))
+		row["button"].disabled = not can_afford
+
+
+func _on_train_unit(id: String) -> void:
+	if _current_barracks != null and is_instance_valid(_current_barracks):
+		_current_barracks.queue_train(id)
+	_refresh_barracks_menu()
+
+
+## mode: AllyUnit.Mode (0 = GUARD/defend, 1 = FOLLOW).
+func _on_command_units(mode: int) -> void:
+	for unit in get_tree().get_nodes_in_group("player_units"):
+		if is_instance_valid(unit):
+			unit.set("mode", mode)
+	_refresh_barracks_menu()
 
 
 func _on_planet_changed(planet_name: String) -> void:

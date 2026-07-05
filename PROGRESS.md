@@ -70,7 +70,11 @@ Notes:
   "(capped)" gather) with floating text, and the HUD tints a resource row red at cap. Build mode
   grew past 9 structure types, so mouse wheel now cycles selection alongside the 1-9 keys, and the
   build menu strip scrolls to keep the selected entry in view.
-- [ ] Milestone 16 - Barracks (train ground units)
+- [x] Milestone 16 - Barracks (train ground units): Barracks queues one unit at a time on a
+  dedicated one-shot TrainTimer; GroundUnits defines Soldier/Heavy/Ranger; trained ally_unit.tscn
+  instances (group player_units) guard their spawn point, auto-engage the nearest enemy (melee or,
+  for the Ranger, the existing ground projectile), and the HUD Barracks panel's Follow Me/Defend
+  Base buttons toggle every unit's mode at once.
 - [ ] Milestone 17 - Spaceport (train space units)
 - [ ] Milestone 18 - Enterable ship interior on planet
 

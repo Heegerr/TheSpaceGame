@@ -1,3 +1,4 @@
+class_name PlanetField
 extends Node2D
 ## Scatters seeded star systems around the origin of the space scene, each
 ## with 2-6 orbiting planets (Milestone 9). System centers are spaced far

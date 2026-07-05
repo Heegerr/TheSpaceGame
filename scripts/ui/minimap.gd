@@ -90,11 +90,11 @@ func _draw_space(ship: Node2D, panel_size: Vector2) -> void:
 	var center := panel_size / 2.0
 	var scale_f := (minf(panel_size.x, panel_size.y) / 2.0 - 6.0) / radius
 
-	var planet_field := get_tree().current_scene.get_node_or_null("PlanetField")
+	var planet_field := get_tree().current_scene.get_node_or_null("PlanetField") as PlanetField
 	if planet_field != null:
-		for star in planet_field.get_children():
-			if star is Star:
-				_dot(star.position, ship.position, center, scale_f, radius, Color(1.0, 0.9, 0.5, 0.75), 3.0)
+		for child in planet_field.get_children():
+			if child is Star:
+				_dot((child as Star).position, ship.position, center, scale_f, radius, Color(1.0, 0.9, 0.5, 0.75), 3.0)
 		for planet in planet_field.planets:
 			if not is_instance_valid(planet):
 				continue
@@ -107,14 +107,15 @@ func _draw_space(ship: Node2D, panel_size: Vector2) -> void:
 			_dot(planet.position, ship.position, center, scale_f, radius, color, 2.2)
 
 	for hostile in get_tree().get_nodes_in_group("hostile_ship"):
-		if is_instance_valid(hostile):
-			_dot(hostile.position, ship.position, center, scale_f, radius, Color(1.0, 0.3, 0.3), 2.0)
+		if hostile is Node2D and is_instance_valid(hostile):
+			_dot((hostile as Node2D).position, ship.position, center, scale_f, radius, Color(1.0, 0.3, 0.3), 2.0)
 
 	for fleet_ship in get_tree().get_nodes_in_group("player_fleet"):
-		if not is_instance_valid(fleet_ship):
+		if not (fleet_ship is Node2D) or not is_instance_valid(fleet_ship):
 			continue
-		var is_active := fleet_ship == ship
-		_dot(fleet_ship.position, ship.position, center, scale_f, radius,
+		var fleet_node := fleet_ship as Node2D
+		var is_active := fleet_node == ship
+		_dot(fleet_node.position, ship.position, center, scale_f, radius,
 				Color(1, 1, 1) if is_active else Color(0.7, 0.85, 1.0), 3.0 if is_active else 2.0)
 
 
@@ -124,14 +125,14 @@ func _draw_ground(player: Node2D, panel_size: Vector2) -> void:
 	var scale_f := (minf(panel_size.x, panel_size.y) / 2.0 - 6.0) / radius
 
 	for structure in get_tree().get_nodes_in_group("structures"):
-		if is_instance_valid(structure):
-			_dot(structure.position, player.position, center, scale_f, radius, Color(0.55, 0.75, 1.0), 2.6)
+		if structure is Node2D and is_instance_valid(structure):
+			_dot((structure as Node2D).position, player.position, center, scale_f, radius, Color(0.55, 0.75, 1.0), 2.6)
 	for resource in get_tree().get_nodes_in_group("resources"):
-		if is_instance_valid(resource) and resource.visible:
-			_dot(resource.position, player.position, center, scale_f, radius, Color(0.6, 0.9, 0.5), 1.6)
+		if resource is CanvasItem and is_instance_valid(resource) and (resource as CanvasItem).visible:
+			_dot((resource as Node2D).position, player.position, center, scale_f, radius, Color(0.6, 0.9, 0.5), 1.6)
 	for enemy in get_tree().get_nodes_in_group("enemies"):
-		if is_instance_valid(enemy):
-			_dot(enemy.position, player.position, center, scale_f, radius, Color(1.0, 0.3, 0.3), 2.2)
+		if enemy is Node2D and is_instance_valid(enemy):
+			_dot((enemy as Node2D).position, player.position, center, scale_f, radius, Color(1.0, 0.3, 0.3), 2.2)
 	draw_circle(center, 3.0, Color(1, 1, 1))
 
 
