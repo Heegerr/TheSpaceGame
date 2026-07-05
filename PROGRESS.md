@@ -116,6 +116,12 @@ editor, fix anything it reports, commit .uid artifacts, then playtest: new game 
 menu, gather, build a Habitat (B), survive the first wave, visit XETH-PRIME (story planet with
 golden ring), buy an escort, pick a fight with a patrol.
 
+## Extras beyond the milestone list
+
+- Options menu: `Settings` autoload (master volume via the "Master" audio bus, keyboard rebinds)
+  persisted to `user://settings.cfg`; `scenes/ui/options_menu.tscn` opens from an "Options" button
+  on both the main menu and the in-game pause menu.
+
 ## Notes for the next session
 
 - Godot binary is not on PATH; code is written blind against Godot 4.7 APIs. When the user
