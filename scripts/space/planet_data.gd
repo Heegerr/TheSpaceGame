@@ -102,14 +102,14 @@ static func _pick_biome(rng: RandomNumberGenerator, biome_weights: Dictionary) -
 	if biome_weights.is_empty():
 		return rng.randi_range(0, BIOME_COUNT - 1)
 	var total := 0.0
-	for biome in range(BIOME_COUNT):
-		total += float(biome_weights.get(biome, 1.0))
+	for biome_index in range(BIOME_COUNT):
+		total += float(biome_weights.get(biome_index, 1.0))
 	var roll := rng.randf_range(0.0, total)
 	var accum := 0.0
-	for biome in range(BIOME_COUNT):
-		accum += float(biome_weights.get(biome, 1.0))
+	for biome_index in range(BIOME_COUNT):
+		accum += float(biome_weights.get(biome_index, 1.0))
 		if roll <= accum:
-			return biome
+			return biome_index
 	return BIOME_COUNT - 1
 
 

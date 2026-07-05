@@ -8,7 +8,8 @@ extends Node2D
 var display_name := ""
 var star_radius := 46.0
 var star_color := Color(1.0, 0.92, 0.55)
-var star_type := StarSystemTypes.Type.YELLOW_STAR
+## StarSystemTypes.Type; plain int to match star_type everywhere else.
+var star_type: int = StarSystemTypes.Type.YELLOW_STAR
 var _nebula_tint := Color(0, 0, 0, 0)
 var _pulse_time := 0.0
 

@@ -34,9 +34,9 @@ var _lfo_phase := 0.0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	_current_freq = CHORDS[0].duplicate()
-	_from_freq = CHORDS[0].duplicate()
-	_target_freq = CHORDS[0].duplicate()
+	_current_freq.assign(CHORDS[0])
+	_from_freq.assign(CHORDS[0])
+	_target_freq.assign(CHORDS[0])
 
 	var stream := AudioStreamGenerator.new()
 	stream.mix_rate = MIX_RATE
@@ -70,8 +70,8 @@ func _advance_chord(delta: float) -> void:
 	if _chord_timer <= 0.0:
 		_chord_timer = CHORD_DURATION
 		_chord_index = (_chord_index + 1) % CHORDS.size()
-		_from_freq = _current_freq.duplicate()
-		_target_freq = CHORDS[_chord_index].duplicate()
+		_from_freq.assign(_current_freq)
+		_target_freq.assign(CHORDS[_chord_index])
 		_glide_timer = GLIDE_TIME
 	if _glide_timer > 0.0:
 		_glide_timer = maxf(0.0, _glide_timer - delta)

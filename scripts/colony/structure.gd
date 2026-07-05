@@ -126,7 +126,7 @@ static func pay_cost(structure_type: int) -> bool:
 
 
 func setup(structure_type: int) -> void:
-	type = structure_type
+	type = structure_type as Type
 	queue_redraw()
 	match type:
 		Type.MINER:
