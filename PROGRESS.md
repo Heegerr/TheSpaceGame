@@ -37,15 +37,32 @@ Notes:
   Bonuses apply only to the flagship (`player_ship.gd` `is_flagship`, false for escorts) additively on
   top of ShipUpgrades tiers.
 
-## Second build wave (Milestones 9-18)
+## Third build wave (Milestones 9-18)
+
+- [x] Milestone 9 - Multiple planets per star system: `StarSystemData` + `Star` (visual only);
+  `PlanetField` scatters 8 star systems far apart with 2-6 orbiting planets each in tight orbits;
+  flat `planets` array preserved so encounter/wave/story code needed no changes.
+- [ ] Milestone 10 - Star system types (visual + generation modifier per type)
+- [ ] Milestone 11 - Biome variety tied to star system type
+- [ ] Milestone 12 - Minimap (space and ground)
+- [ ] Milestone 13 - Defense structures (towers, walls, gates)
+- [ ] Milestone 14 - Research building & tech tree
+- [ ] Milestone 15 - Storage building
+- [ ] Milestone 16 - Barracks (train ground units)
+- [ ] Milestone 17 - Spaceport (train space units)
+- [ ] Milestone 18 - Enterable ship interior on planet
 
 Requested 2026-07-05: a third build wave extending the second wave's colony/combat systems -
 multi-planet star systems with typed system modifiers (M9-10), expanded biome variety tied to
 system type (M11), a minimap (M12), defense structures (M13), research/tech tree (M14), a
 dedicated storage building (M15), ground unit training via Barracks (M16), space unit training
 via Spaceport (M17), and an enterable ship interior (M18). Being implemented one milestone at a
-time, each its own commit, per session pacing agreed with the user. See git log for progress;
-this file's milestone list will grow as each lands.
+time, each its own commit. See git log for progress.
+
+Design note on M9: rather than a separate zoomed-out "galaxy view" scene, star systems are laid
+out directly in the existing continuous space scene - system centers are spaced far apart and
+each system's planets orbit close to their star, so travel time naturally does the "quick within
+a system, long between systems" job the milestone asked for without a new scene-flow layer.
 
 ## Session-2 recap (2026-07-04)
 
