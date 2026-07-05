@@ -31,6 +31,7 @@ func _ready() -> void:
 			var enemy := ENEMY_SCENE.instantiate()
 			enemy.position = anchor + Vector2.from_angle(rng.randf_range(0.0, TAU)) * rng.randf_range(20.0, 90.0)
 			add_child(enemy)
+			enemy.add_to_group("hostile_ship")
 			enemy.setup(_pick_kind(rng, threat), anchor)
 			enemy.died.connect(_on_enemy_died.bind(patrol))
 			patrol["ships"].append(enemy)

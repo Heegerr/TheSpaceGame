@@ -50,7 +50,10 @@ Notes:
   palette, ambient CanvasModulate tint on the surface, and an exclusive gatherable resource
   (obsidian/biomass/crystal/silicate/acid/resin/cryo_ore); StarSystemTypes.biome_weights updated
   to reference all 10 per the M10 system-type themes.
-- [ ] Milestone 12 - Minimap (space and ground)
+- [x] Milestone 12 - Minimap (space and ground): `scripts/ui/minimap.gd`, a Control living
+  inside `hud.tscn`, self-detects mode via the player groups and draws icon dots from world
+  positions (planets/stars/hostiles/fleet in space; structures/resources/enemies on the ground);
+  "toggle_map" (M) expands the top-right corner panel into a centered full map.
 - [ ] Milestone 13 - Defense structures (towers, walls, gates)
 - [ ] Milestone 14 - Research building & tech tree
 - [ ] Milestone 15 - Storage building
