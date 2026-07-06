@@ -12,6 +12,8 @@ const OptionsMenuScene := preload("res://scenes/ui/options_menu.tscn")
 var _slot_buttons: Array[Button] = []
 var _mode := "new"
 var _options_menu: CanvasLayer
+# TODO: REMOVE BEFORE RELEASE - debug cheat button, see _ready().
+var _god_mode_button: Button
 
 
 func _ready() -> void:
@@ -22,6 +24,18 @@ func _ready() -> void:
 	$Center/MainButtons/LoadButton.pressed.connect(_open_slots.bind("load"))
 	$Center/MainButtons/OptionsButton.pressed.connect(_open_options)
 	$Center/MainButtons/QuitButton.pressed.connect(func() -> void: get_tree().quit())
+	# TODO: REMOVE BEFORE RELEASE - debug cheat button (toggles
+	# GameManager.debug_god_mode: no damage taken + free construction).
+	# Created in code rather than in main_menu.tscn so deleting this block
+	# (and _refresh_god_mode_button below) removes the whole thing.
+	_god_mode_button = Button.new()
+	_god_mode_button.name = "GodModeButton"
+	_god_mode_button.add_theme_font_size_override("font_size", 10)
+	_god_mode_button.pressed.connect(func() -> void:
+		GameManager.debug_god_mode = not GameManager.debug_god_mode
+		_refresh_god_mode_button())
+	_refresh_god_mode_button()
+	main_buttons.add_child(_god_mode_button)
 	$Center/SlotPanel/BackButton.pressed.connect(_close_slots)
 	for slot in GameManager.SLOT_COUNT:
 		var button := Button.new()
@@ -66,3 +80,10 @@ func _open_options() -> void:
 		_options_menu = OptionsMenuScene.instantiate()
 		add_child(_options_menu)
 	_options_menu.open()
+
+
+# TODO: REMOVE BEFORE RELEASE - part of the debug god mode button (_ready()).
+func _refresh_god_mode_button() -> void:
+	var on := GameManager.debug_god_mode
+	_god_mode_button.text = "DEBUG: God Mode [%s]" % ("ON" if on else "OFF")
+	_god_mode_button.modulate = Color(1.0, 0.55, 0.45) if on else Color(0.85, 0.7, 0.65)

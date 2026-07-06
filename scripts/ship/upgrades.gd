@@ -44,6 +44,9 @@ static func next_cost(category: String) -> Dictionary:
 
 
 static func can_afford_cost(cost: Dictionary) -> bool:
+	# TODO: REMOVE BEFORE RELEASE - debug god mode upgrades for free.
+	if GameManager.debug_god_mode:
+		return true
 	for resource_id in cost:
 		if Inventory.count(resource_id) < int(cost[resource_id]):
 			return false
@@ -54,8 +57,10 @@ static func buy(category: String) -> bool:
 	var cost := next_cost(category)
 	if cost.is_empty() or not can_afford_cost(cost):
 		return false
-	for resource_id in cost:
-		Inventory.add(resource_id, -int(cost[resource_id]))
+	# TODO: REMOVE BEFORE RELEASE - debug god mode skips paying the cost.
+	if not GameManager.debug_god_mode:
+		for resource_id in cost:
+			Inventory.add(resource_id, -int(cost[resource_id]))
 	GameManager.ship_upgrades[category] = tier(category) + 1
 	GameManager.recompute_capacity()
 	return true
@@ -64,8 +69,10 @@ static func buy(category: String) -> bool:
 static func buy_escort() -> bool:
 	if GameManager.fleet_size >= MAX_FLEET or not can_afford_cost(ESCORT_COST):
 		return false
-	for resource_id in ESCORT_COST:
-		Inventory.add(resource_id, -int(ESCORT_COST[resource_id]))
+	# TODO: REMOVE BEFORE RELEASE - debug god mode skips paying the cost.
+	if not GameManager.debug_god_mode:
+		for resource_id in ESCORT_COST:
+			Inventory.add(resource_id, -int(ESCORT_COST[resource_id]))
 	GameManager.fleet_size += 1
 	return true
 

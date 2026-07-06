@@ -109,6 +109,9 @@ static func cost_of(structure_type: int) -> Dictionary:
 
 
 static func can_afford(structure_type: int) -> bool:
+	# TODO: REMOVE BEFORE RELEASE - debug god mode builds for free.
+	if GameManager.debug_god_mode:
+		return true
 	var cost := cost_of(structure_type)
 	for resource_id in cost:
 		if Inventory.count(resource_id) < int(cost[resource_id]):
@@ -117,6 +120,9 @@ static func can_afford(structure_type: int) -> bool:
 
 
 static func pay_cost(structure_type: int) -> bool:
+	# TODO: REMOVE BEFORE RELEASE - debug god mode builds for free.
+	if GameManager.debug_god_mode:
+		return true
 	if not can_afford(structure_type):
 		return false
 	var cost := cost_of(structure_type)

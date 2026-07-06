@@ -53,6 +53,9 @@ static func cost_text(cost: Dictionary) -> String:
 
 
 static func can_afford_cost(cost: Dictionary) -> bool:
+	# TODO: REMOVE BEFORE RELEASE - debug god mode builds designs for free.
+	if GameManager.debug_god_mode:
+		return true
 	for resource_id in cost:
 		if Inventory.count(resource_id) < int(cost[resource_id]):
 			return false

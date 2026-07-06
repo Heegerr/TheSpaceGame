@@ -128,6 +128,9 @@ func _physics_process(delta: float) -> void:
 
 
 func take_ship_damage(amount: float, _from_position: Vector2) -> void:
+	# TODO: REMOVE BEFORE RELEASE - debug god mode ignores all damage.
+	if GameManager.debug_god_mode:
+		return
 	_shield_delay = SHIELD_REGEN_DELAY
 	var remaining := amount
 	if shield > 0.0:

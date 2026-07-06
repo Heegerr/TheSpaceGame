@@ -23,6 +23,14 @@ const StructureScript := preload("res://scripts/colony/structure.gd")
 ## saving is skipped in that case.
 var current_slot := -1
 
+# TODO: REMOVE BEFORE RELEASE - debug cheat flag, toggled by the main menu's
+# "DEBUG: God Mode" button (main_menu.gd). While true, the player on foot and
+# all player ships ignore incoming damage, and every construction cost
+# (structures, trained units/ships, shipyard parts, ship upgrades) is free.
+# Session-only: never written to save files. Grep "REMOVE BEFORE RELEASE" to
+# find every place that checks it.
+var debug_god_mode := false
+
 ## Seed for the whole galaxy: planet positions and per-planet seeds derive from it.
 var galaxy_seed: int = 20260704
 

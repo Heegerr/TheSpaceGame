@@ -65,6 +65,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func take_damage(amount: int, from_position: Vector2) -> void:
+	# TODO: REMOVE BEFORE RELEASE - debug god mode ignores all damage.
+	if GameManager.debug_god_mode:
+		return
 	if not alive or _invuln_timer > 0.0:
 		return
 	health = maxi(0, health - amount)

@@ -102,8 +102,10 @@ func _on_build() -> void:
 		stats_label.text = "Not enough resources"
 		stats_label.add_theme_color_override("font_color", Color(1, 0.45, 0.4))
 		return
-	for resource_id in cost:
-		Inventory.add(resource_id, -int(cost[resource_id]))
+	# TODO: REMOVE BEFORE RELEASE - debug god mode skips paying the cost.
+	if not GameManager.debug_god_mode:
+		for resource_id in cost:
+			Inventory.add(resource_id, -int(cost[resource_id]))
 	var design := {"name": "Flagship", "cells": ShipParts.cells_to_array(_cells)}
 	if GameManager.ship_designs.is_empty():
 		GameManager.ship_designs.append(design)
