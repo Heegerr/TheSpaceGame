@@ -1,9 +1,11 @@
 class_name ShipParts
 extends RefCounted
 ## Grid-based ship part definitions for the Shipyard (Milestone 7). A design
-## is a set of {x, y, part} cells on a GRID_SIZE x GRID_SIZE grid; exactly one
-## HULL_CORE and at least one ENGINE are required, and every part must be
-## 4-connected to the core so the layout reads as one physical ship.
+## is a set of {x, y, part} cells on a GRID_SIZE x GRID_SIZE grid. To finalize
+## (Build) a design it needs exactly one HULL_CORE, at least one ENGINE, and
+## every part 4-connected to the core so the layout reads as one physical
+## ship - but placing individual parts is never validated: any part, including
+## the Hull Core itself, can go down first in any order.
 ## Bonuses from the active design (GameManager.ship_designs) stack additively
 ## on top of ShipUpgrades tiers, applied only to the flagship.
 
@@ -86,7 +88,11 @@ static func totals_of(cells: Dictionary) -> Dictionary:
 	return {"hull": hull, "speed": speed, "damage": damage, "cargo": cargo}
 
 
-## Exactly one HULL_CORE, at least one ENGINE, and every cell 4-connected to the core.
+## Finalize-time validation only (the Shipyard's Build button, and its live
+## "what's still missing" hint) - never called when placing a single part.
+## Requires exactly one HULL_CORE, at least one ENGINE, and every cell
+## 4-connected to the core. Errors are worded as next-step guidance so they
+## cannot read as part-placement prerequisites.
 static func validate(cells: Dictionary) -> Dictionary:
 	var core_pos := Vector2i(-999, -999)
 	var core_count := 0
@@ -98,10 +104,12 @@ static func validate(cells: Dictionary) -> Dictionary:
 			core_pos = pos
 		elif part == Part.ENGINE:
 			engine_count += 1
-	if core_count != 1:
-		return {"valid": false, "error": "Needs exactly one Hull Core"}
+	if core_count == 0:
+		return {"valid": false, "error": "Place a Hull Core to start"}
+	if core_count > 1:
+		return {"valid": false, "error": "Only one Hull Core allowed"}
 	if engine_count < 1:
-		return {"valid": false, "error": "Needs at least one Engine"}
+		return {"valid": false, "error": "Add an Engine to complete the design"}
 	var visited := {core_pos: true}
 	var queue: Array[Vector2i] = [core_pos]
 	while not queue.is_empty():
@@ -112,7 +120,7 @@ static func validate(cells: Dictionary) -> Dictionary:
 				visited[neighbor] = true
 				queue.append(neighbor)
 	if visited.size() != cells.size():
-		return {"valid": false, "error": "All parts must connect to the Hull Core"}
+		return {"valid": false, "error": "Connect every part to the Hull Core"}
 	return {"valid": true, "error": ""}
 
 

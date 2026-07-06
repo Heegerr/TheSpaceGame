@@ -70,6 +70,10 @@ func _on_palette_pressed(part: int) -> void:
 
 
 func _on_cell_pressed(pos: Vector2i) -> void:
+	# Placement is intentionally unvalidated: any part can be placed in any
+	# order, so a Hull Core goes down first with no prerequisites. Design
+	# requirements (core + engine + connectivity) are only checked when
+	# finalizing via the Build button - see ShipParts.validate().
 	if _selected_part == ERASE:
 		_cells.erase(pos)
 	else:
@@ -139,7 +143,13 @@ func _refresh() -> void:
 	stats_label.text = "Hull +%d   Speed +%d%%   Damage +%d   Cargo +%d" % [
 			int(totals["hull"]), roundi(float(totals["speed"]) * 100.0), int(totals["damage"]), int(totals["cargo"])]
 	stats_label.add_theme_color_override("font_color", Color(0.85, 0.88, 0.95))
-	cost_label.text = "Cost: %s" % ShipParts.cost_text(ShipParts.total_cost(_cells))
+	# Live finalize-readiness: Build stays disabled with a neutral "what's
+	# next" hint until the design is complete, so the whole-design checks
+	# (e.g. "at least one Engine") can never read as placement requirements.
+	var check := ShipParts.validate(_cells)
+	build_button.disabled = not bool(check["valid"])
+	var status := "ready to build" if bool(check["valid"]) else str(check["error"])
+	cost_label.text = "Cost: %s  -  %s" % [ShipParts.cost_text(ShipParts.total_cost(_cells)), status]
 
 
 func _refresh_palette() -> void:
