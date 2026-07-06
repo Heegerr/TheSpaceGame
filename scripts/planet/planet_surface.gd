@@ -1,25 +1,41 @@
 extends Node2D
 ## Procedural planet surface: FastNoiseLite-driven 32 px tile terrain generated
 ## from the planet's seed, with a cleared landing pad, scattered gatherable
-## resources, and the on-foot player.
+## resources, and the on-foot player. Difficulty scales with the planet's
+## distance-based danger (PlanetData.danger): more and tougher aliens, and
+## past PlanetData.COLONY_DANGER_THRESHOLD, seeded enemy colonies.
 
-const MAP_SIZE := 80
+## Tile dimensions of the square surface. 140 (was 80) roughly triples the
+## explorable area; generation stays a single one-time pass (~19.6k set_cell
+## calls) and TileMapLayer only renders visible tiles, so both load time and
+## runtime cost remain comfortable.
+const MAP_SIZE := 140
 const VARIANT_LOW := TileSetBuilder.VARIANT_LOW
 const VARIANT_GROUND := TileSetBuilder.VARIANT_GROUND
 const VARIANT_ALT := TileSetBuilder.VARIANT_ALT
 const VARIANT_OBSTACLE := TileSetBuilder.VARIANT_OBSTACLE
 
 const RESOURCE_SCENE := preload("res://scenes/planet/resource_node.tscn")
-const RESOURCE_CAP := 80
+## High enough that the row-by-row scatter loop practically never hits it on a
+## 140x140 map (~190 expected placements), so resources stay evenly spread
+## instead of clustering toward the top rows when the cap cuts the loop short.
+const RESOURCE_CAP := 200
 const RESOURCE_CHANCE := 0.014
 const PAD_CLEAR_DISTANCE := 96.0
 
 const ENEMY_SCENE := preload("res://scenes/planet/enemy.tscn")
-const ENEMY_MIN := 6
-const ENEMY_MAX := 10
+const ENEMY_MIN := 10
+const ENEMY_MAX := 16
 const ENEMY_MIN_PAD_DISTANCE := 320.0
+## Extra aliens at danger 1.0, scaling linearly from 0 at the galaxy origin.
+const ENEMY_DANGER_BONUS := 18
 
 const STRUCTURE_SCENE := preload("res://scenes/colony/structure.tscn")
+
+const ENEMY_STRUCTURE_SCENE := preload("res://scenes/colony/enemy_structure.tscn")
+const EnemyStructure := preload("res://scripts/colony/enemy_structure.gd")
+const COLONY_MIN_PAD_DISTANCE := 620.0
+const COLONY_SPACING := 900.0
 
 ## Milestone 11: each new biome's weight table centers on its own exclusive
 ## resource (obsidian/biomass/crystal/silicate/acid/resin/cryo_ore), so that
@@ -59,6 +75,7 @@ func _ready() -> void:
 	_generate_terrain()
 	_place_pad_and_player()
 	_load_structures()
+	_spawn_enemy_colonies()
 	_scatter_resources()
 	_spawn_enemies()
 	hud.bind_player(player)
@@ -183,13 +200,13 @@ func _scatter_resources() -> void:
 func _spawn_enemies() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = data.planet_seed + 2
-	var to_spawn := rng.randi_range(ENEMY_MIN, ENEMY_MAX)
+	var to_spawn := rng.randi_range(ENEMY_MIN, ENEMY_MAX) + roundi(data.danger * ENEMY_DANGER_BONUS)
 	var attempts := 0
 	var spawned := 0
-	while spawned < to_spawn and attempts < 400:
+	while spawned < to_spawn and attempts < 900:
 		attempts += 1
 		var cell := Vector2i(rng.randi_range(3, MAP_SIZE - 4), rng.randi_range(3, MAP_SIZE - 4))
-		if not is_placeable(cell):
+		if not is_placeable(cell) or structure_cells.has(cell):
 			continue
 		var world := terrain.map_to_local(cell)
 		if world.distance_to(pad_position) < ENEMY_MIN_PAD_DISTANCE:
@@ -197,8 +214,113 @@ func _spawn_enemies() -> void:
 		var enemy := ENEMY_SCENE.instantiate()
 		enemy.position = world
 		add_child(enemy)
-		enemy.setup(data.biome)
+		enemy.setup(data.biome, _pick_enemy_tier(rng))
 		spawned += 1
+
+
+## Tier odds scale with danger: planets near the origin field only normal
+## aliens; the outer rim is mostly veterans with a heavy elite presence.
+func _pick_enemy_tier(rng: RandomNumberGenerator) -> int:
+	var roll := rng.randf()
+	if roll < data.danger * 0.45:
+		return 2
+	if roll < data.danger * 1.1:
+		return 1
+	return 0
+
+
+## Distance-based enemy colonies: planets past PlanetData.COLONY_DANGER_THRESHOLD
+## get seeded hostile outposts - miners worth raiding for loot, turrets that
+## fire on the player and their units, and broken wall rings - with more
+## clusters and tougher structures the further the planet sits from the galaxy
+## origin. Like the alien walkers they are visit-local: destroyed structures
+## regenerate (deterministically, seed+3) on the next landing.
+func _spawn_enemy_colonies() -> void:
+	if data.danger < PlanetData.COLONY_DANGER_THRESHOLD:
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = data.planet_seed + 3
+	var centers: Array[Vector2i] = []
+	var cluster_count := 1 + int(data.danger * 2.2)
+	for i in cluster_count:
+		var center := _find_colony_center(rng, centers)
+		if center.x < 0:
+			continue
+		centers.append(center)
+		_build_colony_cluster(rng, center)
+
+
+## A colony center needs clear ground away from the landing pad and from other
+## colonies. Returns (-1, -1) when no spot survives the attempt budget.
+func _find_colony_center(rng: RandomNumberGenerator, taken: Array[Vector2i]) -> Vector2i:
+	for attempt in 240:
+		var cell := Vector2i(rng.randi_range(8, MAP_SIZE - 9), rng.randi_range(8, MAP_SIZE - 9))
+		if not is_placeable(cell) or structure_cells.has(cell):
+			continue
+		var world := terrain.map_to_local(cell)
+		if world.distance_to(pad_position) < COLONY_MIN_PAD_DISTANCE:
+			continue
+		var crowded := false
+		for other in taken:
+			if terrain.map_to_local(other).distance_to(world) < COLONY_SPACING:
+				crowded = true
+				break
+		if not crowded:
+			return cell
+	return Vector2i(-1, -1)
+
+
+## Turrets at the heart, miners around them, and a partial wall ring whose
+## gaps fall wherever terrain blocks placement or the roll misses - so every
+## colony has a way in. Counts scale with danger.
+func _build_colony_cluster(rng: RandomNumberGenerator, center: Vector2i) -> void:
+	_place_enemy_structure(EnemyStructure.Kind.TURRET, center)
+	_scatter_colony_kind(rng, EnemyStructure.Kind.TURRET, roundi(data.danger * 2.0), center, 2)
+	_scatter_colony_kind(rng, EnemyStructure.Kind.MINER, 2 + int(data.danger * 3.0), center, 3)
+	var wall_chance := 0.5 + data.danger * 0.4
+	for cell in _ring_cells(center, 4):
+		if rng.randf() > wall_chance:
+			continue
+		if is_placeable(cell) and not structure_cells.has(cell):
+			_place_enemy_structure(EnemyStructure.Kind.WALL, cell)
+
+
+func _scatter_colony_kind(rng: RandomNumberGenerator, kind: int, count: int, center: Vector2i, radius: int) -> void:
+	var placed := 0
+	var attempts := 0
+	while placed < count and attempts < 60:
+		attempts += 1
+		var cell := center + Vector2i(rng.randi_range(-radius, radius), rng.randi_range(-radius, radius))
+		if not is_placeable(cell) or structure_cells.has(cell):
+			continue
+		_place_enemy_structure(kind, cell)
+		placed += 1
+
+
+## Cells at exactly Chebyshev distance `radius` from `center`.
+func _ring_cells(center: Vector2i, radius: int) -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	for y in range(center.y - radius, center.y + radius + 1):
+		for x in range(center.x - radius, center.x + radius + 1):
+			if maxi(absi(x - center.x), absi(y - center.y)) == radius:
+				cells.append(Vector2i(x, y))
+	return cells
+
+
+func _place_enemy_structure(kind: int, cell: Vector2i) -> void:
+	var structure := ENEMY_STRUCTURE_SCENE.instantiate()
+	structure.position = terrain.map_to_local(cell)
+	add_child(structure)
+	structure.setup(kind, data.danger)
+	structure.destroyed.connect(_on_enemy_structure_destroyed.bind(cell))
+	# Occupies the cell like a player structure (blocks build mode, resource
+	# scatter, and alien spawns) but is never recorded in GameManager -
+	# colonies are procedural, not part of the player's save.
+	structure_cells[cell] = structure
+
+
+func _on_enemy_structure_destroyed(_structure: Node, cell: Vector2i) -> void:
+	structure_cells.erase(cell)
 
 
 func _on_player_died() -> void:

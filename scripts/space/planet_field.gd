@@ -20,6 +20,12 @@ const ORBIT_BASE_RADIUS := 150.0
 const ORBIT_STEP := 95.0
 const ORBIT_JITTER := 20.0
 
+## PlanetData.danger ramps from 0.0 at DANGER_NEAR distance from the galaxy
+## origin (the spawn-clear zone, i.e. the innermost systems) to 1.0 at
+## DANGER_FAR (the field edge; corner systems clamp to 1.0).
+const DANGER_NEAR := SPAWN_CLEAR_RADIUS
+const DANGER_FAR := FIELD_RADIUS
+
 var planets: Array[SpacePlanet] = []
 var systems: Array[StarSystemData] = []
 
@@ -84,6 +90,7 @@ func generate(galaxy_seed: int) -> void:
 			add_child(planet)
 			var planet_data := PlanetData.make(seeds[i], StarSystemTypes.biome_weights(system_data.star_type))
 			planet_data.star_type = system_data.star_type
+			planet_data.danger = clampf((planet_pos.length() - DANGER_NEAR) / (DANGER_FAR - DANGER_NEAR), 0.0, 1.0)
 			var story := StoryRegistry.story_for_index(flat_i)
 			if not story.is_empty():
 				planet_data.display_name = str(story["name"])

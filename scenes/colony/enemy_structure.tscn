@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/colony/enemy_structure.gd" id="1_estruct"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_efootprint"]
+size = Vector2(26, 26)
+
+[node name="EnemyStructure" type="StaticBody2D" groups=["enemies"]]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_estruct")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_efootprint")

@@ -8,6 +8,11 @@ extends RefCounted
 enum Biome { GRASS, DESERT, ICE, VOLCANIC, SWAMP, CRYSTAL, BARREN, TOXIC, FOREST, TUNDRA }
 
 const BIOME_COUNT := 10
+
+## Planets with danger at or above this get procedural enemy colonies on the
+## surface (planet_surface.gd); the space view's threat readout (planet.gd)
+## uses the same threshold so the warning matches what actually spawns.
+const COLONY_DANGER_THRESHOLD := 0.35
 const NAME_SYLLABLES: Array[String] = [
 	"ke", "pler", "zor", "ath", "ion", "vex", "tau", "rin",
 	"os", "mir", "dra", "ul", "tho", "nak", "ei", "sol",
@@ -68,6 +73,13 @@ var atmosphere_color: Color
 ## editor). Set by PlanetField right after PlanetData.make(). Milestone 14
 ## uses it to gate system-locked Research Building tech tree upgrades.
 var star_type := -1
+
+## Distance-based difficulty, 0.0 (innermost systems, safest) to 1.0 (outer
+## rim). Stamped by PlanetField from the planet's distance to the galaxy
+## origin, same pattern as star_type; stays 0.0 when a surface is run directly
+## from the editor. Drives surface enemy count/tier and enemy colony
+## generation (planet_surface.gd) plus the space-view threat readout.
+var danger := 0.0
 
 ## Set for hand-authored story planets (see StoryRegistry): landing loads
 ## surface_scene instead of the procedural surface.

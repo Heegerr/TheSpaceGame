@@ -125,6 +125,38 @@ golden ring), buy an escort, pick a fight with a patrol.
   runtime-synthesis approach as `Sfx`), playing in the main menu and every gameplay scene; its own
   volume slider lives in the Options menu alongside master volume.
 
+## Session-5 (2026-07-06): shipyard UX fix, debug god mode, distance difficulty
+
+- Shipyard validation fix: part placement was already unvalidated in code, but the Build
+  button's whole-design errors ("Needs at least one Engine") fired on click and read exactly
+  like placement prerequisites (e.g. when only a Hull Core was down, or when Engine was merely
+  selected in the palette). Build now disables itself with a live "what's next" hint in the
+  cost line (reworded ShipParts.validate() + shipyard.gd _refresh), so validation is
+  unmistakably finalize-only: place a Hull Core first, add an Engine, Build enables.
+- DEBUG: God Mode (TEMPORARY - grep "REMOVE BEFORE RELEASE" to strip it): main menu button
+  below Quit toggles GameManager.debug_god_mode (session-only, never saved). On: the on-foot
+  player and all player ships ignore damage; structures, Barracks/Spaceport training, Shipyard
+  designs, ship upgrades and escorts are all free. The button is created in code by
+  main_menu.gd, so main_menu.tscn needed no edit.
+- Bigger planets: planet_surface.gd MAP_SIZE 80 -> 140 (~3x area), RESOURCE_CAP 200, base
+  alien count 10-16, minimap full-map ground radius widened to cover the new size.
+- Distance-based difficulty: PlanetData.danger (0..1, from distance to the galaxy origin,
+  stamped by PlanetField like star_type) adds up to +18 aliens per surface and shifts spawns
+  toward veteran/elite tiers (enemy.gd TIER_* stats: hp 3/6/10, damage 1/2/3, faster, bigger,
+  red-tinted, better scrap). The highlighted planet in space shows a "Threat" rating
+  (Low/Moderate/High/Severe; suppressed on story planets).
+- Enemy colonies on planets with danger >= 0.35 (PlanetData.COLONY_DANGER_THRESHOLD):
+  scenes/colony/enemy_structure.tscn + scripts/colony/enemy_structure.gd (Enemy Miner/Turret/
+  Wall), seeded seed+3: 1-3 clusters of a turret core, 2-5 miners, and a broken wall ring.
+  Group "enemies" + physics layer 1, so player Towers/ally units/minimap/build-occupancy all
+  work unchanged; turrets out-range the player Tower slightly (190 vs 170) and fire the shared
+  ground projectile at the player and player_units via collision_mask 3 (world+player).
+  Health/damage/loot scale with danger; colonies are visit-local (regenerate each landing).
+- None of this session's code has been run in the editor yet (binary unavailable again).
+  First action next session: open the editor, fix anything it reports, commit any .uid
+  artifacts, then playtest: shipyard Hull Core -> Engine -> Build; toggle god mode and take
+  hits / build free; fly outward to a "Threat: High" planet and raid an enemy colony.
+
 ## Notes for the next session
 
 - Godot binary is not on PATH; code is written blind against Godot 4.7 APIs. When the user

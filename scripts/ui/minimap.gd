@@ -15,7 +15,9 @@ const FULL_SIZE := Vector2(440.0, 300.0)
 const SPACE_RADIUS_SMALL := 1400.0
 const SPACE_RADIUS_FULL := 4200.0
 const GROUND_RADIUS_SMALL := 480.0
-const GROUND_RADIUS_FULL := 1400.0
+## Covers a 140-tile surface (planet_surface.gd MAP_SIZE) from its center:
+## 140 * 32 / 2 = 2240 world units to the edge, plus a little slack.
+const GROUND_RADIUS_FULL := 2400.0
 const REFRESH_INTERVAL := 0.15
 
 var expanded := false
